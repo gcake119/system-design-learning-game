@@ -1,15 +1,18 @@
 {
-  "name": "system-design-simulator",
+  "name": "system-design-learning-game",
   "version": "0.1.0",
   "private": true,
   "license": "MIT",
   "author": "Vijay Gupta (@vijaygupta18)",
-  "description": "SystemForge — an open-source system design interview simulator: build architectures, simulate traffic, and get scored.",
+  "description": "System Design Lab — an open-source interactive system design learning game.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "audit:licenses": "node scripts/audit-licenses.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
@@ -36,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0",
+  "id": "booking-baseline",
+  "version": "1.0.0",
+  "title": "熱門活動訂票系統",
+  "difficulty": "Medium",
+  "summary": "設計一套能承受開賣尖峰、避免超賣並提供可追蹤失敗處理的訂票系統。",
+  "learningObjectives": [
+    "辨識流量尖峰下的入口保護策略",
+    "用鎖定與逾時機制避免同一座位重複售出",
+    "區分同步購票路徑與非同步通知工作"
+  ],
+  "requirements": {
+    "readsPerSec": 50000,
+    "writesPerSec": 5000,
+    "storageGB": 2000,
+    "latencyMs": 300,
+    "users": "5M MAU"
+  },
+  "constraints": [
+    "同一座位不可售予兩位使用者",
+    "付款逾時後必須釋放座位",
+    "通知失敗不可回滾已完成的訂單"
+  ],
+  "hints": [
+    {
+      "title": "先保護入口",
+      "content": "思考速率限制與等候室如何降低後端瞬間負載。"
+    },
+    {
+      "title": "找出一致性邊界",
+      "content": "座位保留需要明確的唯一寫入者、鎖定期限與冪等鍵。"
+    }
+  ],
+  "tags": ["booking", "traffic-spike", "consistency", "idempotency"],
+  "architecture": {
+    "components": [
+      { "id": "gateway", "componentId": "api-gateway", "x": 80, "y": 140 },
+      { "id": "limiter", "componentId": "rate-limiter", "x": 300, "y": 140 },
+      { "id": "app", "componentId": "app-server", "x": 520, "y": 140 },
+      { "id": "lock", "componentId": "distributed-lock", "x": 740, "y": 60 },
+      { "id": "sql", "componentId": "sql-db", "x": 740, "y": 220 },
+      { "id": "queue", "componentId": "message-queue", "x": 520, "y": 340 }
+    ],
+    "edges": [
+      { "source": "gateway", "target": "limiter" },
+      { "source": "limiter", "target": "app" },
+      { "source": "app", "target": "lock" },
+      { "source": "app", "target": "sql" },
+      { "source": "app", "target": "queue", "async": true }
+    ]
+  },
+  "rounds": [
+    {
+      "id": "normal-sale",
+      "title": "一般販售",
+      "trafficRps": 3000,
+      "incidents": []
+    },
+    {
+      "id": "opening-spike",
+      "title": "開賣尖峰",
+      "trafficRps": 50000,
+      "incidents": [
+        {
+          "id": "flash-crowd",
+          "type": "traffic-spike",
+          "title": "瞬間湧入",
+          "description": "廣告倒數結束後，入口流量在數秒內放大十倍。",
+          "severity": 0.85,
+          "affectedComponentIds": ["gateway", "limiter", "app"]
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "author": "System Design Lab contributors",
+    "license": "CC-BY-SA-4.0",
+    "independentlyAuthored": true,
+    "sources": [
+      {
+        "title": "PostgreSQL: Explicit Locking",
+        "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
+        "license": "PostgreSQL License",
+        "author": "PostgreSQL Global Development Group"
+      }
+    ]
+  }
+}

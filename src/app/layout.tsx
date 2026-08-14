@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SystemForge — System Design Interview Simulator",
-  description: "SystemForge is an interactive system design interview simulator — build architectures on a canvas, simulate production traffic, and get scored like a real interview.",
+  title: "System Design Lab — Interactive Learning Game",
+  description: "Build architectures, predict behavior, run deterministic incidents, inspect evidence, and improve your system design.",
 };
 
 export const viewport: Viewport = {

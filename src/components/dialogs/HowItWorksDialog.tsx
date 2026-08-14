@@ -52,14 +52,14 @@ const STEPS = [
 
 export function HowItWorksDialog({ open, onClose, onPickProblem, onPlayWalkthrough }: HowItWorksDialogProps) {
   return (
-    <ModalShell open={open} onClose={onClose} ariaLabel="How SystemForge works" panelClassName="max-w-2xl">
+    <ModalShell open={open} onClose={onClose} ariaLabel="How System Design Lab works" panelClassName="max-w-2xl">
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-zinc-800 bg-zinc-900/95 px-5 py-4 backdrop-blur">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-mark.svg" alt="" width={26} height={26} className="h-[26px] w-[26px]" />
           <div>
-            <h2 className="font-display text-base font-bold tracking-tight text-zinc-50">How SystemForge works</h2>
+            <h2 className="font-display text-base font-bold tracking-tight text-zinc-50">How System Design Lab works</h2>
             <p className="text-xs text-zinc-400">Build architectures, simulate traffic, and get scored like a real interview.</p>
           </div>
         </div>

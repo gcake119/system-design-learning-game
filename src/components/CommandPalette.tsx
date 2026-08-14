@@ -123,7 +123,7 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
   const items = useMemo<CommandItem[]>(() => {
     const a = actions;
     const actionItems: CommandItem[] = [
-      { id: "act-guide", group: "Actions", label: "How SystemForge works", icon: HelpCircle, run: a.onShowGuide },
+      { id: "act-guide", group: "Actions", label: "How System Design Lab works", icon: HelpCircle, run: a.onShowGuide },
       { id: "act-sim", group: "Actions", label: "Run simulation", hint: "⌘↵", icon: Play, run: a.onSimulate },
       { id: "act-score", group: "Actions", label: "Score design", hint: "⌘⇧S", icon: Trophy, run: a.onScore },
       { id: "act-ref", group: "Actions", label: "Load reference solution", icon: Download, run: a.onLoadReference },

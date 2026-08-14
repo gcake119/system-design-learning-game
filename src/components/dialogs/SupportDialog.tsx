@@ -78,10 +78,10 @@ export function SupportDialog({ open, onClose }: SupportDialogProps) {
           </div>
 
           <h2 className="mt-4 text-lg font-semibold tracking-tight text-zinc-100">
-            Enjoying SystemForge?
+            Support upstream SystemForge
           </h2>
           <p className="mx-auto mt-1.5 max-w-[280px] text-xs leading-relaxed text-zinc-400">
-            If this helped you prep for a system design interview, a chai goes a long way to keep it alive and open-source.
+            This donation flow belongs to SystemForge&apos;s original author, Vijay Gupta, whose simulator powers this fork.
           </p>
 
           {/* Quick amounts — UPI intents (work best on mobile) */}

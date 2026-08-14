@@ -170,9 +170,9 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
 
         <div className="flex shrink-0 items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-mark.svg" alt="SystemForge" width={20} height={20} className="h-5 w-5" />
+          <img src="/logo-mark.svg" alt="System Design Lab" width={20} height={20} className="h-5 w-5" />
           <span className="hidden font-display text-[15px] font-bold tracking-[-0.02em] text-zinc-50 sm:inline">
-            SystemForge
+            System Design Lab
           </span>
         </div>
 

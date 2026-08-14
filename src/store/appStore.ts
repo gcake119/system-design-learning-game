@@ -22,7 +22,7 @@ interface AppState {
   leftSidebarOpen: boolean;
   rightPanelOpen: boolean;
   activeLeftTab: "components" | "problems" | "learn";
-  activeRightTab: "properties" | "simulation" | "score" | "capacity" | "tradeoffs";
+  activeRightTab: "properties" | "guide" | "simulation" | "score" | "capacity" | "tradeoffs";
   toast: ToastData | null;
 
   setSelectedProblem: (id: string) => void;

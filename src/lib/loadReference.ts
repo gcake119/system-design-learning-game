@@ -68,6 +68,7 @@ export function buildReferenceGraph(problem: Problem): {
         source: sourceId,
         target: targetId,
         type: "animated",
+        data: ref.async === true ? { async: true } : undefined,
       });
     }
   }

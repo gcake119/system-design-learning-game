@@ -16,7 +16,9 @@ The inherited simulator is a viable base for the open-source learning game. The 
 - `src/scenarios/schema.ts`: scenario types, provenance checks, parser, and inherited-problem adapter.
 - `src/scenarios/incidentEngine.ts`: deterministic incident activation based on content and architecture.
 - `src/scenarios/core/booking-baseline.json`: independently authored Traditional Chinese fixture.
-- Twelve automated tests covering engine, scoring, scenario, catalog, and persistence invariants.
+- Four registered release scenarios for Short URL, Real-time Chat, Video Streaming, and Payment System.
+- A Guide tab with independently written decisions, official documentation, and locator-only ebook page references.
+- Fourteen automated tests covering engine, scoring, scenario, catalog, reference, and persistence invariants.
 - Static Next.js export and a dependency-license audit.
 - Product specification, architecture decision, content policy, and third-party notices.
 

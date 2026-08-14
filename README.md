@@ -11,12 +11,14 @@ The foundation spike establishes:
 - a standalone, versioned scenario JSON format;
 - content provenance and independent-authorship checks;
 - deterministic incident replay keyed by scenario, architecture, round, and seed;
+- four selectable release scenarios with independently written solution guides;
+- official documentation as primary evidence and locator-only ebook page references for further reading;
 - compatibility with the inherited 35-problem canvas and scoring model;
 - static Next.js export for simple open-source hosting;
 - automated tests for the simulator, scorer, scenarios, catalogs, and local storage;
 - auditable content and dependency license policies.
 
-The planned first learning levels are Short URL, Real-time Chat, Video Streaming, and Payment System. See [the product specification](docs/product-spec.md).
+The first learning levels are Short URL, Real-time Chat, Video Streaming, and Payment System. See [the product specification](docs/product-spec.md).
 
 ## Learning loop
 
@@ -58,6 +60,7 @@ src/engine/                 traffic simulation
 src/scoring/                connectivity-aware scoring
 src/scenarios/              scenario schema and incident engine
 src/scenarios/core/         independently authored core scenarios
+src/scenarios/registry.ts   validated scenario registry
 src/data/                   inherited components and practice problems
 src/store/                  browser state and localStorage persistence
 docs/product-spec.md        interaction and level specification
@@ -66,7 +69,7 @@ docs/adr/                   architecture decisions
 
 ## Content policy
 
-The ByteByteGo system-design ebook discussed during planning is used only as reference material. Its prose, illustrations, diagrams, page layouts, screenshots, and exercise wording are not included in this repository. Learning content must be independently written and must declare its sources and license.
+The ByteByteGo system-design ebook discussed during planning is used only as reference material. Its prose, illustrations, diagrams, page layouts, screenshots, and exercise wording are not included in this repository. Learning content must be independently written and must declare its sources and license. Solution guides may point readers to the official 2025 archive by section title and PDF page number; those locators are not redistributed ebook content and are not covered by this project's CC BY-SA license.
 
 Read [CONTENT_LICENSE.md](CONTENT_LICENSE.md) before contributing a scenario.
 

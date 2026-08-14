@@ -19,6 +19,8 @@ import { TradeoffLog } from "./TradeoffLog";
 import { TradeoffCards } from "./TradeoffCards";
 import { useInterviewStore } from "@/store/interviewStore";
 import { InterviewPhasePanel } from "@/components/interview/InterviewPhasePanel";
+import { SolutionGuide } from "./SolutionGuide";
+import { getScenarioProblemById } from "@/scenarios/registry";
 
 interface RightPanelProps {
   open?: boolean;
@@ -35,6 +37,7 @@ function RightTabs({ onSimulate }: { onSimulate: () => void }) {
       <div className="mx-2 mt-2 shrink-0 overflow-x-auto">
         <TabsList className="h-8 w-max bg-zinc-800">
           <TabsTrigger value="properties" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Props</TabsTrigger>
+          <TabsTrigger value="guide" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">解答</TabsTrigger>
           <TabsTrigger value="simulation" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Simulate</TabsTrigger>
           <TabsTrigger value="score" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Score</TabsTrigger>
           <TabsTrigger value="capacity" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Capacity</TabsTrigger>
@@ -46,6 +49,14 @@ function RightTabs({ onSimulate }: { onSimulate: () => void }) {
         <ScrollArea className="h-full">
           <div className="p-3">
             <PropertiesTab />
+          </div>
+        </ScrollArea>
+      </TabsContent>
+
+      <TabsContent value="guide" className="mt-0 flex-1 overflow-hidden min-h-0">
+        <ScrollArea className="h-full">
+          <div className="p-3">
+            <SolutionGuide />
           </div>
         </ScrollArea>
       </TabsContent>
@@ -224,7 +235,7 @@ function PropertiesTab() {
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) as
     | (typeof nodes[number] & { data: ComponentNodeData })
     | undefined;
-  const problem = getProblemById(selectedProblemId);
+  const problem = getScenarioProblemById(selectedProblemId) ?? getProblemById(selectedProblemId);
 
   return (
     <div className="space-y-4">

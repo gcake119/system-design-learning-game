@@ -1,0 +1,198 @@
+{
+  "schemaVersion": "1.1",
+  "id": "scenario-short-url",
+  "version": "1.0.0",
+  "title": "短網址：熱門連結與快取失效",
+  "difficulty": "Easy",
+  "summary": "建立讀多寫少的短網址服務，讓短碼唯一、重新導向快速，並在熱門連結快取失效時保護資料庫。",
+  "learningObjectives": [
+    "比較隨機短碼、序號編碼與預先產生短碼",
+    "設計 Cache Aside（旁路快取）讀取方式與 TTL（存活時間）",
+    "處理熱門資料、快取同時失效與資料庫減壓"
+  ],
+  "successCriteria": [
+    "請求路徑包含入口保護、可水平擴充服務與持久化儲存",
+    "讀取路徑使用快取且說明快取失效策略",
+    "短碼生成方式可處理碰撞且不依賴單一應用實例",
+    "分析紀錄位於非同步路徑"
+  ],
+  "requirements": {
+    "readsPerSec": 100000,
+    "writesPerSec": 1000,
+    "storageGB": 75000,
+    "latencyMs": 100,
+    "users": "100M DAU"
+  },
+  "constraints": [
+    "短碼必須唯一且不可輕易枚舉",
+    "99% 的重新導向請求要在 100 毫秒內完成",
+    "預設保存五年並允許自訂到期時間",
+    "分析事件不可阻塞重新導向"
+  ],
+  "hints": [
+    {
+      "title": "先畫讀取路徑",
+      "content": "熱門流量應先讀取快取，只有快取找不到資料時才查詢長期儲存。"
+    },
+    {
+      "title": "避免同時到期",
+      "content": "讓 TTL（存活時間）帶一點隨機差異，並讓同一筆熱門資料只由一個請求回填。"
+    },
+    {
+      "title": "分析可以稍後完成",
+      "content": "點擊事件送入佇列，不讓分析寫入增加重新導向延遲。"
+    }
+  ],
+  "tags": ["short-url", "cache", "id-generation", "hot-key"],
+  "architecture": {
+    "components": [
+      { "id": "dns", "componentId": "dns", "x": 40, "y": 180 },
+      { "id": "lb", "componentId": "load-balancer", "x": 220, "y": 180 },
+      { "id": "limiter", "componentId": "rate-limiter", "x": 400, "y": 180 },
+      { "id": "app", "componentId": "app-server", "x": 580, "y": 180 },
+      { "id": "cache", "componentId": "cache", "x": 760, "y": 60 },
+      { "id": "ids", "componentId": "id-generator", "x": 580, "y": 340 },
+      { "id": "db", "componentId": "nosql-db", "x": 760, "y": 220 },
+      { "id": "events", "componentId": "message-queue", "x": 760, "y": 380 }
+    ],
+    "edges": [
+      { "source": "dns", "target": "lb" },
+      { "source": "lb", "target": "limiter" },
+      { "source": "limiter", "target": "app" },
+      { "source": "app", "target": "cache" },
+      { "source": "app", "target": "ids" },
+      { "source": "app", "target": "db" },
+      { "source": "app", "target": "events", "async": true }
+    ]
+  },
+  "rounds": [
+    {
+      "id": "steady-redirects",
+      "title": "穩定重新導向",
+      "trafficRps": 20000,
+      "incidents": []
+    },
+    {
+      "id": "viral-hot-key",
+      "title": "熱門短網址爆紅",
+      "trafficRps": 150000,
+      "incidents": [
+        {
+          "id": "hot-key-expiry",
+          "type": "traffic-spike",
+          "title": "熱門鍵同時失效",
+          "description": "高流量短碼的快取到期，大量請求同時回源。",
+          "severity": 0.9,
+          "affectedComponentIds": ["cache", "db"]
+        }
+      ]
+    },
+    {
+      "id": "cache-outage",
+      "title": "快取節點故障",
+      "trafficRps": 80000,
+      "incidents": [
+        {
+          "id": "cache-down",
+          "type": "node-failure",
+          "title": "快取不可用",
+          "description": "快取叢集失去服務，所有讀取可能直接落到資料庫。",
+          "severity": 0.8,
+          "affectedComponentIds": ["cache"]
+        }
+      ]
+    }
+  ],
+  "solution": {
+    "summary": "入口先分散並限制流量。服務先查快取；找不到資料時，再讀取 NoSQL（非關聯式資料庫），並用帶隨機差異的 TTL（存活時間）回填。短碼由獨立 ID 服務產生不容易猜中的候選值，若重複就重新產生。點擊分析交給佇列稍後處理。",
+    "keyDecisions": [
+      {
+        "title": "短碼唯一性",
+        "rationale": "預先產生或隨機產生短碼，資料層以唯一條件作最後防線；碰撞時重新取碼。"
+      },
+      {
+        "title": "Cache Aside（旁路快取）與錯開到期時間",
+        "rationale": "熱門重新導向由快取承擔。TTL（存活時間）加入隨機差異，並讓同一筆資料只回填一次，避免大量請求同時查資料庫。"
+      },
+      {
+        "title": "故障時降載",
+        "rationale": "快取故障時限制流量、暫停呼叫失敗服務，並優先保留重要功能，避免所有流量直接壓垮資料庫。"
+      },
+      {
+        "title": "分析事件非同步",
+        "rationale": "重新導向完成後發布點擊事件，分析延遲不影響使用者路徑。"
+      }
+    ],
+    "officialReferences": [
+      {
+        "kind": "official-documentation",
+        "publisher": "IETF",
+        "title": "RFC 3986: Uniform Resource Identifier Generic Syntax",
+        "url": "https://datatracker.ietf.org/doc/html/rfc3986",
+        "note": "URI 組成、正規化與識別資源的標準語意。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "Redis",
+        "title": "EXPIRE command",
+        "url": "https://redis.io/docs/latest/commands/expire/",
+        "note": "設定快取鍵到期時間與條件式更新。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "PostgreSQL",
+        "title": "Constraints",
+        "url": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+        "note": "以唯一約束保護短碼映射的不變條件。"
+      }
+    ],
+    "furtherReading": [
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "Structure of URL",
+        "pdfPages": [81, 82],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "How can Cache Systems go wrong?",
+        "pdfPages": [246, 247],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "Load Balancers vs API Gateways vs Reverse Proxy! And how can they Work Together?",
+        "pdfPages": [312, 313],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      }
+    ]
+  },
+  "provenance": {
+    "author": "System Design Lab contributors",
+    "license": "CC-BY-SA-4.0",
+    "independentlyAuthored": true,
+    "sources": [
+      {
+        "title": "RFC 3986",
+        "url": "https://datatracker.ietf.org/doc/html/rfc3986",
+        "usage": "reference-only",
+        "author": "IETF"
+      },
+      {
+        "title": "Redis EXPIRE",
+        "url": "https://redis.io/docs/latest/commands/expire/",
+        "usage": "reference-only",
+        "author": "Redis"
+      }
+    ]
+  }
+}

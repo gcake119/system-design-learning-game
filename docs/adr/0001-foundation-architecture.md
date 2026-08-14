@@ -14,6 +14,7 @@ The fork already contains a capable canvas, traffic simulator, connectivity-awar
 - Keep initial persistence in localStorage and publish a static export.
 - License software under MIT; license newly authored learning content under CC BY-SA 4.0 with per-scenario provenance.
 - Treat the planning ebook as a reference only and exclude its expressive content from the repository.
+- Use official technical documentation as primary evidence; permit only locator metadata for ebook further reading.
 
 ## Consequences
 

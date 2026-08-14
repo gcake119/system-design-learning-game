@@ -37,6 +37,7 @@ import { type Node, useReactFlow } from "@xyflow/react";
 import { loadReferenceIntoTab } from "@/lib/loadReference";
 import { exportAsPng, exportAsSvg, exportAsJSON } from "@/lib/exportCanvas";
 import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog";
+import { getScenarioProblemById } from "@/scenarios/registry";
 
 interface TopBarProps {
   onSimulate: () => void;
@@ -76,6 +77,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
 
   const customProblems = useCustomProblemsStore((s) => s.problems);
   const currentProblem =
+    getScenarioProblemById(selectedProblemId) ??
     PROBLEMS.find((p) => p.id === selectedProblemId) ??
     customProblems.find((p) => p.id === selectedProblemId);
 
@@ -148,7 +150,9 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
   }, [handleExportPng]);
 
   const loadReference = useCallback(() => {
-    const problem = PROBLEMS.find((p) => p.id === selectedProblemId);
+    const problem =
+      getScenarioProblemById(selectedProblemId) ??
+      PROBLEMS.find((p) => p.id === selectedProblemId);
     if (!problem) return;
     // Opens the reference in a NEW read-only tab — user's design stays safe
     loadReferenceIntoTab(problem);

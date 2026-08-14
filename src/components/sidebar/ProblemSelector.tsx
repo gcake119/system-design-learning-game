@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 import { PROBLEMS } from "@/data/problems";
 import { useAppStore } from "@/store/appStore";
 import { useCustomProblemsStore } from "@/store/customProblemsStore";
+import { RELEASE_SCENARIOS } from "@/scenarios/registry";
 
 function getDifficultyColor(difficulty: string) {
   switch (difficulty) {
@@ -18,6 +19,13 @@ function getDifficultyColor(difficulty: string) {
     default:
       return "";
   }
+}
+
+function getDifficultyLabel(difficulty: string) {
+  if (difficulty === "Easy") return "簡單";
+  if (difficulty === "Medium") return "中等";
+  if (difficulty === "Hard") return "困難";
+  return difficulty;
 }
 
 interface ProblemSelectorProps {
@@ -43,6 +51,37 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
   return (
     <ScrollArea className="h-full">
       <div className="space-y-1 p-3">
+        <p className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+          學習關卡
+        </p>
+        {RELEASE_SCENARIOS.map((scenario) => (
+          <button
+            key={scenario.id}
+            onClick={() => setSelectedProblem(scenario.id)}
+            aria-pressed={scenario.id === selectedProblemId}
+            className={`flex w-full flex-col gap-1.5 rounded-md px-2.5 py-2 text-left transition-colors ${
+              scenario.id === selectedProblemId
+                ? "border border-cyan-700/60 bg-cyan-950/20"
+                : "border border-transparent hover:bg-zinc-800"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <span className={`text-xs font-medium ${scenario.id === selectedProblemId ? "text-cyan-400" : "text-zinc-300"}`}>
+                {scenario.title}
+              </span>
+              <Badge
+                variant="outline"
+                className={`h-4 shrink-0 px-1.5 text-[11px] font-medium ${getDifficultyColor(scenario.difficulty)}`}
+              >
+                {getDifficultyLabel(scenario.difficulty)}
+              </Badge>
+            </div>
+            <span className="text-[11px] text-zinc-500">{scenario.rounds.length} 回合 · 解答與參考資料</span>
+          </button>
+        ))}
+
+        <div className="!my-3 h-px bg-zinc-800" />
+
         {/* Create Problem button */}
         <button
           onClick={onCreateProblem}
@@ -122,6 +161,10 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
         {customProblems.length > 0 && (
           <div className="!my-2 h-px bg-zinc-800" />
         )}
+
+        <p className="px-2.5 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+          練習題庫
+        </p>
 
         {/* Predefined problems */}
         {PROBLEMS.map((problem) => (

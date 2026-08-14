@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "id": "booking-baseline",
   "version": "1.0.0",
   "title": "熱門活動訂票系統",
@@ -9,6 +9,11 @@
     "辨識流量尖峰下的入口保護策略",
     "用鎖定與逾時機制避免同一座位重複售出",
     "區分同步購票路徑與非同步通知工作"
+  ],
+  "successCriteria": [
+    "入口具備流量保護且核心服務可水平擴充",
+    "座位與訂單由具備交易能力的持久化儲存負責",
+    "通知工作位於非同步路徑"
   ],
   "requirements": {
     "readsPerSec": 50000,
@@ -73,6 +78,50 @@
       ]
     }
   ],
+  "solution": {
+    "summary": "入口先削峰，訂票服務在交易邊界內保留座位並建立訂單，付款與通知以冪等事件銜接。鎖只能協助協調，資料庫唯一約束與交易才是防止超賣的最後防線。",
+    "keyDecisions": [
+      {
+        "title": "入口保護",
+        "rationale": "API Gateway 與 Rate Limiter 在請求進入核心服務前限制突發流量。"
+      },
+      {
+        "title": "交易式座位保留",
+        "rationale": "使用資料庫交易、唯一約束與明確逾時狀態，避免並行請求售出同一座位。"
+      },
+      {
+        "title": "通知非同步化",
+        "rationale": "訂單提交後再透過訊息佇列寄送通知，通知失敗不回滾訂單。"
+      }
+    ],
+    "officialReferences": [
+      {
+        "kind": "official-documentation",
+        "publisher": "PostgreSQL",
+        "title": "Transaction Isolation",
+        "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+        "note": "理解並行更新、鎖定與需要重試的交易。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "PostgreSQL",
+        "title": "Constraints",
+        "url": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+        "note": "以唯一約束保護座位與訂單的不變條件。"
+      }
+    ],
+    "furtherReading": [
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "How to Design Good APIs",
+        "pdfPages": [380, 381],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      }
+    ]
+  },
   "provenance": {
     "author": "System Design Lab contributors",
     "license": "CC-BY-SA-4.0",
@@ -81,7 +130,7 @@
       {
         "title": "PostgreSQL: Explicit Locking",
         "url": "https://www.postgresql.org/docs/current/explicit-locking.html",
-        "license": "PostgreSQL License",
+        "usage": "reference-only",
         "author": "PostgreSQL Global Development Group"
       }
     ]

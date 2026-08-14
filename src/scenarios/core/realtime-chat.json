@@ -1,0 +1,198 @@
+{
+  "schemaVersion": "1.1",
+  "id": "scenario-realtime-chat",
+  "version": "1.0.0",
+  "title": "即時聊天室：斷線、重連與可靠投遞",
+  "difficulty": "Medium",
+  "summary": "設計支援一對一與群組訊息的聊天室，維持長連線、訊息順序、離線補送與可安全重試的投遞流程。",
+  "learningObjectives": [
+    "區分 WebSocket 連線層與訊息持久化層",
+    "允許訊息重送，並讓用戶端去除重複訊息",
+    "處理閘道故障後的大量重連"
+  ],
+  "successCriteria": [
+    "長連線服務可水平擴充並透過發布訂閱傳遞訊息",
+    "訊息在確認前已進入持久化儲存或可靠佇列",
+    "每則訊息具有可用於排序與去重的識別碼",
+    "離線與推播處理不阻塞主要送訊路徑"
+  ],
+  "requirements": {
+    "readsPerSec": 300000,
+    "writesPerSec": 120000,
+    "storageGB": 300000,
+    "latencyMs": 150,
+    "users": "50M DAU"
+  },
+  "constraints": [
+    "同一對話內的訊息順序必須穩定",
+    "網路重試不可造成重複顯示",
+    "使用者離線後重新連線必須補齊缺漏訊息",
+    "群組最多 1000 名成員"
+  ],
+  "hints": [
+    {
+      "title": "連線不等於資料",
+      "content": "WebSocket 伺服器管理連線；訊息歷史需要獨立持久化。"
+    },
+    {
+      "title": "預期會重送",
+      "content": "使用 message_id（訊息編號）、conversation_id（對話編號）與序號，讓重送時可以去除重複訊息並補齊缺漏。"
+    },
+    {
+      "title": "平滑重連",
+      "content": "每次重連都多等一點時間，再加上隨機差異，避免故障恢復後所有裝置同時重連。"
+    }
+  ],
+  "tags": ["chat", "websocket", "ordering", "at-least-once"],
+  "architecture": {
+    "components": [
+      { "id": "lb", "componentId": "load-balancer", "x": 60, "y": 180 },
+      { "id": "ws", "componentId": "websocket-server", "x": 250, "y": 180 },
+      { "id": "discovery", "componentId": "service-discovery", "x": 250, "y": 40 },
+      { "id": "bus", "componentId": "pub-sub", "x": 450, "y": 180 },
+      { "id": "messages", "componentId": "nosql-db", "x": 650, "y": 100 },
+      { "id": "offline", "componentId": "message-queue", "x": 650, "y": 260 },
+      { "id": "notify", "componentId": "notification-service", "x": 840, "y": 260 },
+      { "id": "monitor", "componentId": "monitoring", "x": 450, "y": 360 }
+    ],
+    "edges": [
+      { "source": "lb", "target": "ws" },
+      { "source": "discovery", "target": "ws" },
+      { "source": "ws", "target": "bus" },
+      { "source": "bus", "target": "messages" },
+      { "source": "bus", "target": "offline", "async": true },
+      { "source": "offline", "target": "notify", "async": true },
+      { "source": "ws", "target": "monitor", "async": true }
+    ]
+  },
+  "rounds": [
+    {
+      "id": "normal-conversation",
+      "title": "一般對話流量",
+      "trafficRps": 40000,
+      "incidents": []
+    },
+    {
+      "id": "gateway-loss",
+      "title": "連線節點故障",
+      "trafficRps": 80000,
+      "incidents": [
+        {
+          "id": "ws-node-loss",
+          "type": "node-failure",
+          "title": "WebSocket 節點失去連線",
+          "description": "部分長連線同時中斷，用戶端開始重新連線並要求補送。",
+          "severity": 0.75,
+          "affectedComponentIds": ["ws"]
+        }
+      ]
+    },
+    {
+      "id": "reconnect-surge",
+      "title": "大量同步重連",
+      "trafficRps": 250000,
+      "incidents": [
+        {
+          "id": "reconnect-storm",
+          "type": "traffic-spike",
+          "title": "重連風暴",
+          "description": "行動網路恢復後，大量裝置在同一時間建立連線與補抓訊息。",
+          "severity": 0.9,
+          "affectedComponentIds": ["lb", "ws", "messages"]
+        }
+      ]
+    }
+  ],
+  "solution": {
+    "summary": "負載平衡器把長連線分配到 WebSocket 節點，節點再用發布訂閱方式轉送訊息。訊息先取得唯一 ID 並存入長期儲存，才回覆已收到。離線通知與推播交給佇列稍後處理。用戶端依最後收到的序號補抓缺漏，並去除重複訊息。",
+    "keyDecisions": [
+      {
+        "title": "分離連線與持久化",
+        "rationale": "連線節點保持可替換，訊息歷史由獨立資料層保存，節點故障不遺失已確認訊息。"
+      },
+      {
+        "title": "允許重送並去除重複訊息",
+        "rationale": "網路狀況不明時可以重送，再用 message_id（訊息編號）和對話序號，讓接收端安全去除重複訊息。"
+      },
+      {
+        "title": "對話分區",
+        "rationale": "同一個 conversation_id（對話編號）交給同一個分區或同一位處理者，降低訊息順序被打亂的機會。"
+      },
+      {
+        "title": "重連退避",
+        "rationale": "用戶端每次重連都多等一點時間，並加入隨機差異；伺服器同時限制重連速度，保護補抓訊息的服務。"
+      }
+    ],
+    "officialReferences": [
+      {
+        "kind": "official-documentation",
+        "publisher": "IETF",
+        "title": "RFC 6455: The WebSocket Protocol",
+        "url": "https://datatracker.ietf.org/doc/html/rfc6455",
+        "note": "WebSocket 的握手、雙向訊息與關閉語意。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "RabbitMQ",
+        "title": "Consumer Acknowledgements and Publisher Confirms",
+        "url": "https://www.rabbitmq.com/docs/confirms",
+        "note": "理解訊息確認、重新入列與發送端確認。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "Apache Kafka",
+        "title": "Design: Message Delivery Semantics",
+        "url": "https://kafka.apache.org/41/design/design/#message-delivery-semantics",
+        "note": "比較至多一次、至少一次與恰好一次處理語意。"
+      }
+    ],
+    "furtherReading": [
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "How RabbitMQ Works?",
+        "pdfPages": [206, 207],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "Can a web server provide real-time updates?",
+        "pdfPages": [425, 426],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "8 Popular Network Protocols",
+        "pdfPages": [439, 440],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      }
+    ]
+  },
+  "provenance": {
+    "author": "System Design Lab contributors",
+    "license": "CC-BY-SA-4.0",
+    "independentlyAuthored": true,
+    "sources": [
+      {
+        "title": "RFC 6455",
+        "url": "https://datatracker.ietf.org/doc/html/rfc6455",
+        "usage": "reference-only",
+        "author": "IETF"
+      },
+      {
+        "title": "RabbitMQ Confirms",
+        "url": "https://www.rabbitmq.com/docs/confirms",
+        "usage": "reference-only",
+        "author": "RabbitMQ"
+      }
+    ]
+  }
+}

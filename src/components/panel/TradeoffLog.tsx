@@ -15,6 +15,15 @@ const CATEGORIES: TradeoffEntry["category"][] = [
   "other",
 ];
 
+const CATEGORY_LABELS: Record<TradeoffEntry["category"], string> = {
+  storage: "儲存",
+  communication: "通訊",
+  consistency: "一致性",
+  scaling: "擴充",
+  availability: "可用性",
+  other: "其他",
+};
+
 function getCategoryColor(category: TradeoffEntry["category"]) {
   switch (category) {
     case "storage":
@@ -69,7 +78,7 @@ export function TradeoffLog() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-          Your Trade-offs
+          我的設計取捨
         </p>
         {!formOpen && (
           <Button
@@ -79,7 +88,7 @@ export function TradeoffLog() {
             className="h-6 gap-1 border-zinc-700 px-2 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
           >
             <Plus className="h-3 w-3" />
-            Add
+            新增
           </Button>
         )}
       </div>
@@ -88,20 +97,20 @@ export function TradeoffLog() {
         <div className="space-y-2 rounded-md border border-zinc-700 bg-zinc-800 p-2.5">
           <input
             type="text"
-            placeholder="Decision (e.g. Chose Redis over Memcached)"
+            placeholder="決定，例如：選擇 Redis 而不是 Memcached"
             value={decision}
             onChange={(e) => setDecision(e.target.value)}
             className="w-full rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 outline-none focus:border-cyan-600"
           />
           <textarea
-            placeholder="Rationale — why this choice?"
+            placeholder="理由：為什麼做這個選擇？"
             value={rationale}
             onChange={(e) => setRationale(e.target.value)}
             rows={2}
             className="w-full resize-none rounded-md border border-zinc-600 bg-zinc-900 px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 outline-none focus:border-cyan-600"
           />
           <textarea
-            placeholder="Alternatives considered"
+            placeholder="曾考慮的其他方案"
             value={alternatives}
             onChange={(e) => setAlternatives(e.target.value)}
             rows={2}
@@ -114,7 +123,7 @@ export function TradeoffLog() {
           >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                {CATEGORY_LABELS[cat]}
               </option>
             ))}
           </select>
@@ -126,7 +135,7 @@ export function TradeoffLog() {
               disabled={!decision.trim()}
               className="h-6 border-cyan-700 px-3 text-xs text-cyan-400 hover:bg-cyan-900/30 hover:text-cyan-300 disabled:opacity-40"
             >
-              Save
+              儲存
             </Button>
             <Button
               variant="outline"
@@ -134,7 +143,7 @@ export function TradeoffLog() {
               onClick={handleCancel}
               className="h-6 border-zinc-700 px-3 text-xs text-zinc-400 hover:bg-zinc-800 hover:text-zinc-300"
             >
-              Cancel
+              取消
             </Button>
           </div>
         </div>
@@ -142,7 +151,7 @@ export function TradeoffLog() {
 
       {entries.length === 0 && !formOpen && (
         <p className="text-xs text-zinc-500">
-          No trade-offs logged yet. Record your design decisions as you go.
+          還沒有設計取捨紀錄。你可以在設計過程中隨時補充。
         </p>
       )}
 
@@ -158,7 +167,7 @@ export function TradeoffLog() {
               </p>
               <button
                 onClick={() => removeEntry(entry.id)}
-                aria-label={`Delete trade-off: ${entry.decision}`}
+                aria-label={`刪除設計取捨：${entry.decision}`}
                 className="shrink-0 rounded p-0.5 text-zinc-500 opacity-60 transition-opacity hover:text-rose-400 group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
               >
                 <Trash2 className="h-3 w-3" />
@@ -171,7 +180,7 @@ export function TradeoffLog() {
             )}
             {entry.alternatives && (
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                Alt: {entry.alternatives}
+                其他方案：{entry.alternatives}
               </p>
             )}
             <div className="mt-1.5">
@@ -179,7 +188,7 @@ export function TradeoffLog() {
                 variant="outline"
                 className={`h-4 px-1.5 text-[10px] font-medium ${getCategoryColor(entry.category)}`}
               >
-                {entry.category}
+                {CATEGORY_LABELS[entry.category]}
               </Badge>
             </div>
           </div>

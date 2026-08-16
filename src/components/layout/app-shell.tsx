@@ -13,7 +13,7 @@ import { useCanvasStore, type ComponentNodeData } from "@/store/canvasStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { runSimulation } from "@/engine/simulator";
 import { scoreDesign } from "@/scoring/scorer";
-import { PROBLEMS } from "@/data/problems";
+import { getProblemById } from "@/data/problems";
 import { loadReferenceIntoTab } from "@/lib/loadReference";
 import { Toast } from "@/components/ui/Toast";
 import { SaveDialog } from "@/components/dialogs/SaveDialog";
@@ -115,7 +115,7 @@ export function AppShell() {
     const componentNodes = nodes.filter((n) => n.type !== "text") as Node<ComponentNodeData>[];
 
     if (componentNodes.length === 0) {
-      useAppStore.getState().showToast("No components to simulate", "info");
+      useAppStore.getState().showToast("請先在畫布加入元件再執行模擬", "info");
       return;
     }
 
@@ -136,7 +136,7 @@ export function AppShell() {
 
       useSimulationStore.getState().setResult(result);
       useSimulationStore.getState().setRunning(false);
-      useAppStore.getState().showToast("Simulation complete!", "success");
+      useAppStore.getState().showToast("模擬完成", "success");
     }, 100);
   }, []);
 
@@ -145,7 +145,7 @@ export function AppShell() {
     const componentNodes = nodes.filter((n) => n.type !== "text") as Node<ComponentNodeData>[];
 
     if (componentNodes.length === 0) {
-      useAppStore.getState().showToast("No components to score", "info");
+      useAppStore.getState().showToast("請先在畫布加入元件再進行評分", "info");
       return;
     }
 
@@ -157,12 +157,12 @@ export function AppShell() {
     // On mobile, auto-open the right sheet so the score is visible
     if (isMobile) setMobileRightOpen(true);
 
-    useAppStore.getState().showToast("Design scored!", "success");
+    useAppStore.getState().showToast("評分完成", "success");
   }, [isMobile]);
 
   const handleClearCanvas = useCallback(() => {
     useCanvasStore.getState().clearCanvas();
-    useAppStore.getState().showToast("Canvas cleared", "info");
+    useAppStore.getState().showToast("畫布已清空", "info");
   }, []);
 
   const handlePickProblem = useCallback(() => {
@@ -173,9 +173,9 @@ export function AppShell() {
 
   const handleLoadReference = useCallback(() => {
     const problemId = useAppStore.getState().selectedProblemId;
-    const problem = PROBLEMS.find((p) => p.id === problemId);
+    const problem = getProblemById(problemId);
     if (!problem) {
-      useAppStore.getState().showToast("Pick a problem first", "info");
+      useAppStore.getState().showToast("請先選擇題目", "info");
       handlePickProblem();
       return;
     }
@@ -287,6 +287,7 @@ export function AppShell() {
           onSave={handleSave}
           onLoad={handleLoad}
           onStartInterview={() => setInterviewDialogOpen(true)}
+          onLoadReference={handleLoadReference}
           onCreateProblem={() => setCreateProblemDialogOpen(true)}
           onOpenSupport={() => setSupportDialogOpen(true)}
           onToggleLeft={handleToggleLeft}
@@ -331,11 +332,11 @@ export function AppShell() {
                 inert={!mobileSidebarOpen || undefined}
               >
                 <div className="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 px-3">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Library</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">工具庫</span>
                   <button
                     onClick={() => setMobileSidebarOpen(false)}
                     className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                    aria-label="Close sidebar"
+                    aria-label="關閉側欄"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -377,7 +378,7 @@ export function AppShell() {
                     <button
                       onClick={() => setMobileRightOpen(false)}
                       className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                      aria-label="Close panel"
+                      aria-label="關閉面板"
                     >
                       <X className="h-4 w-4" />
                     </button>

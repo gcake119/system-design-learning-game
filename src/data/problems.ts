@@ -1,5 +1,6 @@
 import type { Problem } from "@/types/problem";
 import { useCustomProblemsStore } from "@/store/customProblemsStore";
+import { getScenarioProblemById } from "@/scenarios/registry";
 
 export const PROBLEMS: Problem[] = [
   {
@@ -2600,6 +2601,9 @@ export const PROBLEMS: Problem[] = [
 ];
 
 export function getProblemById(id: string): Problem | undefined {
+  const scenario = getScenarioProblemById(id);
+  if (scenario) return scenario;
+
   // Check predefined problems first
   const predefined = PROBLEMS.find((p) => p.id === id);
   if (predefined) return predefined;

@@ -13,7 +13,7 @@ export interface ProblemHint {
 
 export interface ReferenceSolution {
   nodes: Array<{ componentId: string; x: number; y: number }>;
-  edges: Array<{ source: string; target: string }>;
+  edges: Array<{ source: string; target: string; async?: boolean }>;
 }
 
 export interface Problem {

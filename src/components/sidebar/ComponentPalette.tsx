@@ -38,6 +38,14 @@ const CATEGORY_BG: Record<string, string> = {
   infrastructure: "bg-cyan-400/10",
 };
 
+const CATEGORY_LABEL: Record<string, string> = {
+  networking: "網路",
+  compute: "運算",
+  storage: "儲存",
+  messaging: "訊息傳遞",
+  infrastructure: "基礎設施",
+};
+
 interface ComponentPaletteProps {
   onCreateCustomComponent?: () => void;
   /** Called after a component is added via tap/quick-add (e.g. to close a mobile drawer). */
@@ -100,7 +108,7 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
         },
       };
       addNode(newNode);
-      useAppStore.getState().showToast(`Added ${component.label}`, "success");
+      useAppStore.getState().showToast(`已加入 ${component.label}`, "success");
       onComponentAdded?.();
     },
     [screenToFlowPosition, addNode, onComponentAdded]
@@ -121,7 +129,7 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
     e.stopPropagation();
     e.preventDefault();
     deleteCustomComponent(id);
-    useAppStore.getState().showToast(`Removed ${label}`, "info");
+    useAppStore.getState().showToast(`已移除 ${label}`, "info");
   };
 
   return (
@@ -131,8 +139,8 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
           <SearchIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
           <input
             type="text"
-            aria-label="Search components"
-            placeholder="Search components..."
+            aria-label="搜尋元件"
+            placeholder="搜尋元件…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-md border border-zinc-700 bg-zinc-800 py-2 pl-8 pr-3 text-xs text-zinc-200 placeholder:text-zinc-500 outline-none transition-colors focus:border-cyan-500"
@@ -141,8 +149,8 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
         {query && (
           <p className="mt-1.5 text-[10px] text-zinc-400">
             {totalMatches === 0
-              ? "No matches"
-              : `${totalMatches} component${totalMatches === 1 ? "" : "s"} match "${search}"`}
+              ? "找不到符合的元件"
+              : `找到 ${totalMatches} 個符合「${search}」的元件`}
           </p>
         )}
       </div>
@@ -154,7 +162,7 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
             className="group flex w-full items-center gap-2 rounded-md border border-dashed border-zinc-700 bg-zinc-800/40 px-2.5 py-2 text-xs text-zinc-300 transition-colors hover:border-cyan-500/50 hover:bg-zinc-800 hover:text-cyan-300"
           >
             <Sparkles className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
-            <span className="flex-1 text-left">Create custom component</span>
+            <span className="flex-1 text-left">建立自訂元件</span>
             <Plus className="h-3 w-3 shrink-0 text-zinc-500 group-hover:text-cyan-400" />
           </button>
         )}
@@ -167,7 +175,7 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
             <div key={cat.key}>
               <div className="mb-2 flex items-center gap-2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
-                  {cat.label}
+                  {CATEGORY_LABEL[cat.key] ?? cat.label}
                 </p>
                 <span className="flex h-4 min-w-4 items-center justify-center rounded bg-zinc-800 px-1 text-[10px] font-medium tabular-nums text-zinc-500">
                   {items.length}
@@ -201,7 +209,7 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
                             <span className="min-w-0 flex-1 truncate">{item.label}</span>
                             {isCustom && (
                               <span className="shrink-0 rounded bg-cyan-500/15 px-1 text-[9px] font-semibold uppercase tracking-wider text-cyan-400">
-                                Custom
+                                自訂
                               </span>
                             )}
                             <span className="shrink-0 font-mono text-[11px] tabular-nums text-zinc-500">
@@ -213,8 +221,8 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
                                 handleQuickAdd(item.id);
                               }}
                               className={`flex ${isCoarse ? "h-9 w-9" : "h-5 w-5"} shrink-0 items-center justify-center rounded text-zinc-500 opacity-60 transition-[opacity,color,background-color] hover:bg-zinc-700 hover:text-cyan-400 hover:opacity-100 group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100`}
-                              title="Add to canvas"
-                              aria-label={`Add ${item.label} to canvas`}
+                              title="加入畫布"
+                              aria-label={`把 ${item.label} 加入畫布`}
                             >
                               <Plus className={isCoarse ? "h-4 w-4" : "h-3 w-3"} />
                             </button>
@@ -222,8 +230,8 @@ export function ComponentPalette({ onCreateCustomComponent, onComponentAdded }: 
                               <button
                                 onClick={(e) => handleDeleteCustom(e, item.id, item.label)}
                                 className={`flex ${isCoarse ? "h-9 w-9" : "h-5 w-5"} shrink-0 items-center justify-center rounded text-zinc-500 opacity-60 transition-[opacity,color,background-color] hover:bg-zinc-700 hover:text-rose-400 hover:opacity-100 group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100`}
-                                title="Delete custom component"
-                                aria-label={`Delete ${item.label}`}
+                                title="刪除自訂元件"
+                                aria-label={`刪除 ${item.label}`}
                               >
                                 <Trash2 className={isCoarse ? "h-4 w-4" : "h-3 w-3"} />
                               </button>

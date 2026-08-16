@@ -22,7 +22,7 @@ interface AppState {
   leftSidebarOpen: boolean;
   rightPanelOpen: boolean;
   activeLeftTab: "components" | "problems" | "learn";
-  activeRightTab: "properties" | "simulation" | "score" | "capacity" | "tradeoffs";
+  activeRightTab: "properties" | "guide" | "simulation" | "score" | "capacity" | "tradeoffs";
   toast: ToastData | null;
 
   setSelectedProblem: (id: string) => void;
@@ -44,7 +44,7 @@ let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      selectedProblemId: "url-shortener",
+      selectedProblemId: "scenario-short-url",
       theme: "dark",
       leftSidebarOpen: true,
       rightPanelOpen: true,

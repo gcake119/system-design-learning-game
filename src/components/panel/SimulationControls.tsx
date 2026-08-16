@@ -7,10 +7,10 @@ import { Play, Loader2 } from "lucide-react";
 import { useSimulationStore } from "@/store/simulationStore";
 
 const PRESETS = [
-  { label: "Light", value: 1000 },
-  { label: "Medium", value: 10000 },
-  { label: "Heavy", value: 100000 },
-  { label: "Stress", value: 500000 },
+  { label: "輕量", value: 1000 },
+  { label: "中量", value: 10000 },
+  { label: "大量", value: 100000 },
+  { label: "壓力", value: 500000 },
 ];
 
 interface SimulationControlsProps {
@@ -25,7 +25,7 @@ export function SimulationControls({ onSimulate }: SimulationControlsProps) {
   return (
     <div className="space-y-4">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Simulation Config
+        模擬設定
       </p>
 
       {/* Presets */}
@@ -48,7 +48,7 @@ export function SimulationControls({ onSimulate }: SimulationControlsProps) {
       <div className="space-y-3">
         <div>
           <div className="mb-1.5 flex items-center justify-between">
-            <label className="text-xs text-zinc-400">Requests/sec</label>
+            <label className="text-xs text-zinc-400">每秒請求數</label>
             <span className="font-mono text-xs text-cyan-500">
               {new Intl.NumberFormat("en-US").format(config.requestsPerSec)}
             </span>
@@ -78,12 +78,12 @@ export function SimulationControls({ onSimulate }: SimulationControlsProps) {
         {isRunning ? (
           <>
             <Loader2 className="h-3 w-3 animate-spin" />
-            Simulating...
+            模擬中…
           </>
         ) : (
           <>
             <Play className="h-3 w-3" />
-            Run Simulation
+            執行模擬
           </>
         )}
       </Button>

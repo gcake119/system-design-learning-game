@@ -31,9 +31,9 @@ export function MetricsDisplay() {
           <Activity className="h-4 w-4 text-zinc-500" />
         </div>
         <div>
-          <p className="text-xs font-medium text-zinc-300">No simulation data</p>
+          <p className="text-xs font-medium text-zinc-300">還沒有模擬資料</p>
           <p className="mt-1 max-w-[200px] text-xs text-zinc-500">
-            Configure load above and click <span className="text-cyan-500">Run Simulation</span> to see metrics
+            設定流量後按下<span className="text-cyan-500">執行模擬</span>，即可查看結果
           </p>
         </div>
       </div>
@@ -49,33 +49,33 @@ export function MetricsDisplay() {
       {/* Summary — big tabular value, dimmed inline unit, muted uppercase label */}
       <div className="grid grid-cols-2 gap-2">
         <div className="rounded-lg bg-zinc-800/70 px-3 py-2.5">
-          <p className="metric-label text-[10px]">Throughput</p>
+          <p className="metric-label text-[10px]">吞吐量</p>
           <p className="metric-value mt-1 font-mono text-2xl font-semibold leading-none text-zinc-50">
             {abbrev(result.throughput)}
             <span className="ml-1 align-baseline text-xs font-normal text-zinc-500">req/s</span>
           </p>
         </div>
         <div className="rounded-lg bg-zinc-800/70 px-3 py-2.5">
-          <p className="metric-label text-[10px]">Total Latency</p>
+          <p className="metric-label text-[10px]">總延遲</p>
           <p className="metric-value mt-1 font-mono text-2xl font-semibold leading-none text-zinc-50">
             {result.totalLatencyMs.toFixed(0)}
             <span className="ml-1 align-baseline text-xs font-normal text-zinc-500">ms</span>
           </p>
-          <p className="mt-1 text-[10px] text-zinc-500">longest path</p>
+          <p className="mt-1 text-[10px] text-zinc-500">最長路徑</p>
         </div>
       </div>
 
       {result.bottleneckNodes.length > 0 && (
         <div className="rounded-md border border-rose-500/20 bg-rose-950/30 px-2.5 py-2">
           <p className="text-xs font-medium text-rose-400">
-            {result.bottleneckNodes.length} Bottleneck{result.bottleneckNodes.length > 1 ? "s" : ""} Detected
+            發現 {result.bottleneckNodes.length} 個 Bottleneck（瓶頸）
           </p>
         </div>
       )}
 
       {/* Per-node metrics */}
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Per-Node Metrics
+        各元件數據
       </p>
 
       {/* Plain overflow container: the base-ui ScrollArea viewport needs a
@@ -97,7 +97,7 @@ export function MetricsDisplay() {
                   </span>
                   {m.isBottleneck && (
                     <span className="ml-auto text-[11px] font-medium text-rose-400" style={{ animation: 'status-pulse 2s infinite' }}>
-                      BOTTLENECK
+                      瓶頸
                     </span>
                   )}
                 </div>
@@ -109,7 +109,7 @@ export function MetricsDisplay() {
                     </p>
                   </div>
                   <div>
-                    <p className="metric-label text-[9px]">Util</p>
+                    <p className="metric-label text-[9px]">使用率</p>
                     <div className="flex items-center gap-1">
                       <div className="h-1 w-8 overflow-hidden rounded-full bg-zinc-700">
                         <div
@@ -129,7 +129,7 @@ export function MetricsDisplay() {
                     </div>
                   </div>
                   <div>
-                    <p className="metric-label text-[9px]">Latency</p>
+                    <p className="metric-label text-[9px]">延遲</p>
                     <p className="font-mono text-xs tabular-nums text-zinc-200">
                       {m.latencyMs.toFixed(0)}ms
                     </p>

@@ -14,7 +14,7 @@ export function TradeoffCards() {
   return (
     <div className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Reference Cards
+        取捨參考卡
       </p>
       <div className="space-y-1.5">
         {TRADEOFF_CARDS.map((card) => {
@@ -51,7 +51,7 @@ export function TradeoffCards() {
                       </p>
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-500">
-                          Pros
+                          優點
                         </p>
                         <ul className="mt-0.5 space-y-0.5">
                           {card.optionA.pros.map((pro, i) => (
@@ -63,7 +63,7 @@ export function TradeoffCards() {
                       </div>
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-wider text-rose-500">
-                          Cons
+                          缺點
                         </p>
                         <ul className="mt-0.5 space-y-0.5">
                           {card.optionA.cons.map((con, i) => (
@@ -82,7 +82,7 @@ export function TradeoffCards() {
                       </p>
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-wider text-emerald-500">
-                          Pros
+                          優點
                         </p>
                         <ul className="mt-0.5 space-y-0.5">
                           {card.optionB.pros.map((pro, i) => (
@@ -94,7 +94,7 @@ export function TradeoffCards() {
                       </div>
                       <div>
                         <p className="text-[10px] font-medium uppercase tracking-wider text-rose-500">
-                          Cons
+                          缺點
                         </p>
                         <ul className="mt-0.5 space-y-0.5">
                           {card.optionB.cons.map((con, i) => (
@@ -111,7 +111,7 @@ export function TradeoffCards() {
                   <div className="space-y-1.5 border-t border-zinc-700 pt-2">
                     <div>
                       <p className="text-[10px] font-medium text-cyan-500">
-                        Choose {card.optionA.name} when:
+                        適合選擇 {card.optionA.name} 的情況：
                       </p>
                       <p className="text-[11px] leading-relaxed text-zinc-400">
                         {card.whenToChooseA}
@@ -119,7 +119,7 @@ export function TradeoffCards() {
                     </div>
                     <div>
                       <p className="text-[10px] font-medium text-purple-500">
-                        Choose {card.optionB.name} when:
+                        適合選擇 {card.optionB.name} 的情況：
                       </p>
                       <p className="text-[11px] leading-relaxed text-zinc-400">
                         {card.whenToChooseB}

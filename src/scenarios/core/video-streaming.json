@@ -1,0 +1,201 @@
+{
+  "schemaVersion": "1.1",
+  "id": "scenario-video-streaming",
+  "version": "1.0.0",
+  "title": "影音串流：轉碼積壓與熱門影片",
+  "difficulty": "Hard",
+  "summary": "設計上傳、非同步轉碼、物件儲存與 CDN 播放流程，並處理熱門內容與轉碼工作積壓。",
+  "learningObjectives": [
+    "把影片管理、轉碼工作與檔案傳送分開處理",
+    "設計多畫質轉碼與自適應串流流程",
+    "利用 CDN（內容傳遞網路）降低原始儲存的流量並處理熱門內容"
+  ],
+  "successCriteria": [
+    "原始檔與轉碼輸出由物件儲存保存",
+    "轉碼工作經可靠佇列交給可水平擴充處理者",
+    "播放路徑包含 CDN（內容傳遞網路），大型檔案不經過應用服務傳送",
+    "影片中繼資料與媒體物件分開儲存"
+  ],
+  "requirements": {
+    "readsPerSec": 500000,
+    "writesPerSec": 2000,
+    "storageGB": 5000000,
+    "latencyMs": 200,
+    "users": "100M DAU"
+  },
+  "constraints": [
+    "上傳完成後才可排入轉碼",
+    "至少輸出三種解析度與多個位元率",
+    "播放清單與片段可由 CDN 快取",
+    "轉碼失敗必須可重試且不可重複發布不完整版本"
+  ],
+  "hints": [
+    {
+      "title": "大型檔案不要經過應用伺服器",
+      "content": "讓用戶端使用短時間有效的簽名 URL，直接上傳到物件儲存。"
+    },
+    {
+      "title": "影片管理與檔案傳送分開",
+      "content": "應用服務保存影片狀態與權限；媒體片段由物件儲存與 CDN（內容傳遞網路）傳送。"
+    },
+    {
+      "title": "轉碼太慢時要控制新工作量",
+      "content": "用佇列中的工作數量判斷是否積壓，依需求增加工作者；重試時沿用同一個工作 ID，避免重複產生結果。"
+    }
+  ],
+  "tags": ["video", "transcoding", "object-storage", "cdn", "hls"],
+  "architecture": {
+    "components": [
+      { "id": "gateway", "componentId": "api-gateway", "x": 60, "y": 120 },
+      { "id": "app", "componentId": "app-server", "x": 260, "y": 120 },
+      { "id": "metadata", "componentId": "sql-db", "x": 460, "y": 40 },
+      { "id": "uploads", "componentId": "object-storage", "x": 460, "y": 200 },
+      { "id": "jobs", "componentId": "message-queue", "x": 460, "y": 360 },
+      { "id": "transcoder", "componentId": "stream-processor", "x": 660, "y": 360 },
+      { "id": "cdn", "componentId": "cdn", "x": 660, "y": 120 },
+      { "id": "shield", "componentId": "origin-shield", "x": 660, "y": 240 },
+      { "id": "monitor", "componentId": "monitoring", "x": 850, "y": 360 }
+    ],
+    "edges": [
+      { "source": "gateway", "target": "app" },
+      { "source": "app", "target": "metadata" },
+      { "source": "app", "target": "uploads" },
+      { "source": "app", "target": "jobs", "async": true },
+      { "source": "jobs", "target": "transcoder", "async": true },
+      { "source": "transcoder", "target": "uploads", "async": true },
+      { "source": "cdn", "target": "shield" },
+      { "source": "shield", "target": "uploads" },
+      { "source": "transcoder", "target": "monitor", "async": true }
+    ]
+  },
+  "rounds": [
+    {
+      "id": "catalog-playback",
+      "title": "一般目錄播放",
+      "trafficRps": 100000,
+      "incidents": []
+    },
+    {
+      "id": "viral-release",
+      "title": "熱門影片首播",
+      "trafficRps": 650000,
+      "incidents": [
+        {
+          "id": "viral-cache-miss",
+          "type": "traffic-spike",
+          "title": "熱門內容尚未暖快取",
+          "description": "大量觀眾同時請求新發布影片，邊緣節點需要回源取得片段。",
+          "severity": 0.85,
+          "affectedComponentIds": ["cdn", "shield", "uploads"]
+        }
+      ]
+    },
+    {
+      "id": "transcode-backlog",
+      "title": "轉碼工作積壓",
+      "trafficRps": 4000,
+      "incidents": [
+        {
+          "id": "slow-transcoder",
+          "type": "dependency-latency",
+          "title": "轉碼速度下降",
+          "description": "高解析度影片大量上傳，工作處理時間增加並造成佇列堆積。",
+          "severity": 0.8,
+          "affectedComponentIds": ["jobs", "transcoder"]
+        }
+      ]
+    }
+  ],
+  "solution": {
+    "summary": "應用服務只管理權限、影片資料與工作狀態；用戶端直接上傳到物件儲存。上傳完成後把工作放入佇列，轉碼工作者產生多種畫質的 HLS 片段，全部完成後才一次發布。播放時由 CDN（內容傳遞網路）與 Origin Shield（來源保護層）提供媒體，只有快取找不到片段時才讀取原始儲存。",
+    "keyDecisions": [
+      {
+        "title": "直接上傳物件儲存",
+        "rationale": "以短效簽名 URL 避免大型檔案佔用應用伺服器連線與頻寬。"
+      },
+      {
+        "title": "可安全重試的背景轉碼",
+        "rationale": "工作 ID 與輸出版本固定，重試時只補齊缺少的檔案，不會重複發布同一版本。"
+      },
+      {
+        "title": "HLS 自適應串流",
+        "rationale": "HLS（HTTP Live Streaming）讓播放器依目前頻寬選擇不同位元率的片段，網路變化時可以切換。"
+      },
+      {
+        "title": "CDN 與來源保護",
+        "rationale": "邊緣快取提供熱門片段；Origin Shield（來源保護層）合併重複讀取，降低物件儲存的負擔。"
+      }
+    ],
+    "officialReferences": [
+      {
+        "kind": "official-documentation",
+        "publisher": "IETF",
+        "title": "RFC 8216: HTTP Live Streaming",
+        "url": "https://datatracker.ietf.org/doc/html/rfc8216",
+        "note": "HLS 播放清單、媒體片段與自適應串流格式。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "Amazon Web Services",
+        "title": "What is Amazon S3?",
+        "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html",
+        "note": "物件儲存的 bucket、object、存取與資料保護模型。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "Amazon Web Services",
+        "title": "Ways to use CloudFront",
+        "url": "https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/IntroductionUseCases.html",
+        "note": "影片點播、直播與邊緣快取的官方使用方式。"
+      }
+    ],
+    "furtherReading": [
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "How Amazon S3 Works?",
+        "pdfPages": [106, 107],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "Where Do We Cache Data?",
+        "pdfPages": [301, 302],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "8 System Design Concepts Explained in 1 Diagram",
+        "pdfPages": [248, 249],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      }
+    ]
+  },
+  "provenance": {
+    "author": "System Design Lab contributors",
+    "license": "CC-BY-SA-4.0",
+    "independentlyAuthored": true,
+    "sources": [
+      {
+        "title": "RFC 8216",
+        "url": "https://datatracker.ietf.org/doc/html/rfc8216",
+        "usage": "reference-only",
+        "author": "IETF"
+      },
+      {
+        "title": "Amazon S3 User Guide",
+        "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html",
+        "usage": "reference-only",
+        "author": "Amazon Web Services"
+      }
+    ]
+  }
+}

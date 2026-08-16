@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "1.1",
+  "id": "scenario-payment-system",
+  "version": "1.0.0",
+  "title": "支付系統：安全重試與帳務一致性",
+  "difficulty": "Hard",
+  "summary": "建立可安全重試、驗證供應商回呼、維護不可變帳務紀錄並透過對帳修正不確定狀態的支付流程。",
+  "learningObjectives": [
+    "以 Idempotency Key（防重複處理鍵）避免同一付款被執行兩次",
+    "區分支付狀態機與不可變帳務分錄",
+    "處理支付供應商逾時、延遲通知與帳目核對"
+  ],
+  "successCriteria": [
+    "付款寫入由具備交易與唯一約束的持久化儲存保護",
+    "API、背景工作與 webhook（外部系統通知）都能安全處理重送",
+    "外部供應商逾時後進入未知狀態而非直接重複扣款",
+    "通知、帳目核對與修正工作都能在背景安全重試"
+  ],
+  "requirements": {
+    "readsPerSec": 30000,
+    "writesPerSec": 10000,
+    "storageGB": 20000,
+    "latencyMs": 500,
+    "users": "20M MAU"
+  },
+  "constraints": [
+    "同一商戶與冪等鍵只能建立一個支付意圖",
+    "所有金額以最小貨幣單位的整數儲存",
+    "webhook（外部系統通知）必須驗證簽章，並能處理順序不同與重送",
+    "帳務分錄只能追加，修正使用反向分錄"
+  ],
+  "hints": [
+    {
+      "title": "逾時不是失敗",
+      "content": "供應商可能已扣款但回應遺失；先查詢或等待回呼，再決定補償。"
+    },
+    {
+      "title": "每個入口都要防止重複處理",
+      "content": "HTTP API、佇列工作與 webhook（外部系統通知）都可能重送，因此要使用各自的防重複處理鍵。"
+    },
+    {
+      "title": "狀態與帳務分開",
+      "content": "支付狀態方便流程控制；不可變分錄支援稽核與對帳。"
+    }
+  ],
+  "tags": ["payment", "idempotency", "ledger", "reconciliation"],
+  "architecture": {
+    "components": [
+      { "id": "gateway", "componentId": "api-gateway", "x": 40, "y": 160 },
+      { "id": "limiter", "componentId": "rate-limiter", "x": 220, "y": 160 },
+      { "id": "app", "componentId": "app-server", "x": 400, "y": 160 },
+      { "id": "lock", "componentId": "distributed-lock", "x": 400, "y": 20 },
+      { "id": "ledger", "componentId": "sql-db", "x": 600, "y": 80 },
+      { "id": "outbox", "componentId": "message-queue", "x": 600, "y": 240 },
+      { "id": "reconcile", "componentId": "task-scheduler", "x": 800, "y": 80 },
+      { "id": "notify", "componentId": "notification-service", "x": 800, "y": 240 },
+      { "id": "monitor", "componentId": "monitoring", "x": 600, "y": 380 }
+    ],
+    "edges": [
+      { "source": "gateway", "target": "limiter" },
+      { "source": "limiter", "target": "app" },
+      { "source": "app", "target": "lock" },
+      { "source": "app", "target": "ledger" },
+      { "source": "app", "target": "outbox", "async": true },
+      { "source": "outbox", "target": "notify", "async": true },
+      { "source": "reconcile", "target": "ledger" },
+      { "source": "app", "target": "monitor", "async": true }
+    ]
+  },
+  "rounds": [
+    {
+      "id": "normal-checkout",
+      "title": "一般結帳",
+      "trafficRps": 5000,
+      "incidents": []
+    },
+    {
+      "id": "provider-timeout",
+      "title": "供應商回應逾時",
+      "trafficRps": 12000,
+      "incidents": [
+        {
+          "id": "ambiguous-charge",
+          "type": "dependency-latency",
+          "title": "扣款結果不確定",
+          "description": "支付供應商已收到請求但回應逾時，使用者與客戶端開始重試。",
+          "severity": 0.9,
+          "affectedComponentIds": ["app", "ledger"]
+        }
+      ]
+    },
+    {
+      "id": "webhook-replay",
+      "title": "Webhook 大量重送",
+      "trafficRps": 30000,
+      "incidents": [
+        {
+          "id": "duplicate-events",
+          "type": "traffic-spike",
+          "title": "重複且亂序的回呼",
+          "description": "供應商恢復服務後重送尚未確認的事件，部分事件順序不同。",
+          "severity": 0.85,
+          "affectedComponentIds": ["gateway", "app", "ledger", "outbox"]
+        }
+      ]
+    }
+  ],
+  "solution": {
+    "summary": "API Gateway（API 入口）負責驗證與限制流量；應用服務用商戶、操作與 Idempotency Key（防重複處理鍵）建立唯一付款。資料庫在同一次交易中寫入付款狀態、帳務紀錄與待傳事件。支付供應商逾時時先標為結果不明，接著主動查詢或等待已驗證的 webhook（外部系統通知）。系統定期核對內外紀錄，再用修正分錄處理差異。",
+    "keyDecisions": [
+      {
+        "title": "防重複處理鍵要綁定付款內容",
+        "rationale": "同一個 Idempotency Key 重試時回傳原本結果；如果付款內容不同就拒絕，避免同一個鍵被錯用。"
+      },
+      {
+        "title": "交易式 Outbox（待傳事件表）",
+        "rationale": "付款狀態與待傳事件在同一次資料庫交易中寫入，再由背景工作可靠傳送，避免只寫成功其中一邊。"
+      },
+      {
+        "title": "帳務紀錄只新增、不改寫",
+        "rationale": "餘額由每筆帳務紀錄計算或預先彙整；錯誤用一筆反向紀錄修正，保留完整查核紀錄。"
+      },
+      {
+        "title": "結果不明時先查清楚再處理",
+        "rationale": "外部逾時不代表付款失敗。先標為 pending/unknown（等待確認／結果不明），再透過主動查詢、webhook 與定期核對取得最後結果。"
+      }
+    ],
+    "officialReferences": [
+      {
+        "kind": "official-documentation",
+        "publisher": "Stripe",
+        "title": "Idempotent requests",
+        "url": "https://docs.stripe.com/api/idempotent_requests",
+        "note": "安全重試、冪等鍵保存與參數一致性。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "Stripe",
+        "title": "Resolve webhook signature verification errors",
+        "url": "https://docs.stripe.com/webhooks/signature",
+        "note": "使用原始 request body、簽章標頭與 endpoint secret 驗證事件。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "PostgreSQL",
+        "title": "Transaction Isolation",
+        "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+        "note": "理解並行交易現象、鎖定與 serialization retry。"
+      },
+      {
+        "kind": "official-documentation",
+        "publisher": "PostgreSQL",
+        "title": "Constraints",
+        "url": "https://www.postgresql.org/docs/current/ddl-constraints.html",
+        "note": "使用唯一約束保護冪等鍵與供應商事件 ID。"
+      }
+    ],
+    "furtherReading": [
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "A Cheatsheet on REST API Design Best Practices",
+        "pdfPages": [143, 144],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "8 System Design Concepts Explained in 1 Diagram",
+        "pdfPages": [248, 249],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      },
+      {
+        "kind": "ebook-page",
+        "publisher": "ByteByteGo",
+        "work": "Big Archive",
+        "edition": "2025",
+        "sectionTitle": "How to Design Good APIs",
+        "pdfPages": [380, 381],
+        "officialUrl": "https://blog.bytebytego.com/p/free-system-design-pdf-158-pages"
+      }
+    ]
+  },
+  "provenance": {
+    "author": "System Design Lab contributors",
+    "license": "CC-BY-SA-4.0",
+    "independentlyAuthored": true,
+    "sources": [
+      {
+        "title": "Stripe Idempotent Requests",
+        "url": "https://docs.stripe.com/api/idempotent_requests",
+        "usage": "reference-only",
+        "author": "Stripe"
+      },
+      {
+        "title": "PostgreSQL Transaction Isolation",
+        "url": "https://www.postgresql.org/docs/current/transaction-iso.html",
+        "usage": "reference-only",
+        "author": "PostgreSQL Global Development Group"
+      }
+    ]
+  }
+}

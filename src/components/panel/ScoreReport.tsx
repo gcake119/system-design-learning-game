@@ -9,6 +9,14 @@ import { useState, useEffect, useRef } from "react";
 import { useSimulationStore } from "@/store/simulationStore";
 import type { CategoryScore } from "@/types/scoring";
 
+const CATEGORY_LABELS: Record<string, string> = {
+  Scalability: "擴充能力",
+  Availability: "可用性",
+  Latency: "延遲",
+  "Cost Efficiency": "成本效率",
+  "Trade-offs": "設計取捨",
+};
+
 /** Animate a number from 0 → target over ~1s, synced with the ring sweep. */
 function useCountUp(target: number, durationMs = 1000) {
   const [value, setValue] = useState(0);
@@ -57,7 +65,7 @@ function CategorySection({ category, index = 0 }: { category: CategoryScore; ind
             <ChevronRight className="h-3 w-3 text-zinc-400" />
           )}
           <span className="text-xs font-medium text-zinc-300">
-            {category.category}
+            {CATEGORY_LABELS[category.category] ?? category.category}
           </span>
         </div>
         <span className="font-mono text-xs text-zinc-400">
@@ -131,9 +139,9 @@ export function ScoreReport() {
           <Trophy className="h-4 w-4 text-zinc-500" />
         </div>
         <div>
-          <p className="text-xs font-medium text-zinc-300">Ready to evaluate</p>
+          <p className="text-xs font-medium text-zinc-300">可以開始評估</p>
           <p className="mt-1 max-w-[220px] text-xs text-zinc-500">
-            Design your system on the canvas, then click <span className="text-cyan-500">Score</span> to see how you did
+            在畫布完成系統設計後，按下<span className="text-cyan-500">評分</span>查看結果
           </p>
         </div>
       </div>
@@ -212,7 +220,7 @@ export function ScoreReport() {
         {/* Category breakdowns */}
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-            Categories
+            分類分數
           </p>
           {scoreResult.categories.map((cat, i) => (
             <CategorySection key={cat.category} category={cat} index={i} />
@@ -225,7 +233,7 @@ export function ScoreReport() {
             <Separator className="bg-zinc-800" />
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                Top Improvements
+                優先改進項目
               </p>
               {topImprovements.map((item, i) => (
                 <div

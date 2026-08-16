@@ -236,7 +236,7 @@ export function DesignCanvas({ onPickProblem, onLoadReference, onStartInterview,
         {isReadOnly && (
           <div className="pointer-events-none absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-cyan-500/30 bg-zinc-900/90 px-3 py-1 text-[11px] font-medium text-cyan-400 shadow-sm backdrop-blur">
             <Lock className="h-3 w-3" />
-            Read-only reference
+            唯讀參考架構
           </div>
         )}
       </div>
@@ -258,10 +258,10 @@ export function DesignCanvas({ onPickProblem, onLoadReference, onStartInterview,
             </motion.div>
             <motion.div variants={emptyItem} className="space-y-1.5">
               <h1 className="font-display text-lg font-bold tracking-[-0.02em] text-zinc-50 md:text-xl">
-                Build an architecture that scales
+                建立能應付成長的系統架構
               </h1>
               <p className="mx-auto max-w-sm text-xs leading-relaxed text-zinc-400 md:text-sm">
-                Pick a problem, drop infrastructure components onto the canvas, and get scored the way an interviewer would evaluate you.
+                選一個題目，把需要的基礎設施元件放上畫布，再用模擬與評分檢查設計。
               </p>
             </motion.div>
 
@@ -272,27 +272,27 @@ export function DesignCanvas({ onPickProblem, onLoadReference, onStartInterview,
                 className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/70 bg-zinc-900/60 px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:border-cyan-500/40 hover:text-cyan-300"
               >
                 <HelpCircle className="h-3.5 w-3.5" />
-                New here? See how it works
+                第一次使用？查看操作說明
               </motion.button>
             )}
 
             <motion.div variants={emptyItem} className="grid w-full gap-2 sm:grid-cols-3">
               <QuickStartCard
                 icon={<BookOpen className="h-3.5 w-3.5" />}
-                title="Pick a problem"
-                hint="35 real interview questions"
+                title="選擇題目"
+                hint="四個學習關卡與完整題庫"
                 onClick={onPickProblem}
               />
               <QuickStartCard
                 icon={<Sparkles className="h-3.5 w-3.5" />}
-                title="Load reference"
-                hint="Open a sample solution"
+                title="載入參考架構"
+                hint="在唯讀分頁開啟範例"
                 onClick={onLoadReference}
               />
               <QuickStartCard
                 icon={<GraduationCap className="h-3.5 w-3.5" />}
-                title="Practice interview"
-                hint="Timed 6-phase mock"
+                title="模擬面試"
+                hint="有計時的六階段練習"
                 onClick={onStartInterview}
                 accent
               />
@@ -301,22 +301,22 @@ export function DesignCanvas({ onPickProblem, onLoadReference, onStartInterview,
             <motion.div variants={emptyItem} className="hidden flex-wrap items-center justify-center gap-3 text-[11px] text-zinc-500 md:flex">
               <span className="flex items-center gap-1.5">
                 <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
-                command palette
+                指令選單
               </span>
               <span className="text-zinc-700">·</span>
               <span className="flex items-center gap-1.5">
                 <MousePointer2 className="h-3 w-3" />
-                Drag from the sidebar
+                從側欄拖曳元件
               </span>
               <span className="text-zinc-700">·</span>
               <span className="flex items-center gap-1">
                 <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px]">⌘E</kbd>
-                export
+                匯出
               </span>
               <span className="text-zinc-700">·</span>
               <span className="flex items-center gap-1">
                 <kbd className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px]">⌘↵</kbd>
-                simulate
+                模擬
               </span>
             </motion.div>
           </motion.div>

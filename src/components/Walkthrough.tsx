@@ -299,7 +299,7 @@ interface Scene {
 }
 
 const SCENES: Scene[] = [
-  { id: "welcome", title: "Welcome to SystemForge", text: "A hands-on simulator for system design interviews. Here's the entire flow in under a minute.", Illo: SceneWelcome },
+  { id: "welcome", title: "Welcome to System Design Lab", text: "A hands-on simulator for system design interviews. Here's the entire flow in under a minute.", Illo: SceneWelcome },
   { id: "build", title: "1 · Build the architecture", text: "Pick from 35 problems, then drag infrastructure components onto the canvas — load balancers, app servers, caches, databases, queues and more.", Illo: SceneBuild },
   { id: "wire", title: "2 · Wire it together", text: "Connect components to model the request path. Click any edge to set its protocol (HTTP, gRPC, WebSocket…) and sync or async mode.", Illo: SceneWire },
   { id: "simulate", title: "3 · Simulate real traffic", text: "Push up to 500K requests/sec through your design and watch QPS, utilization and bottlenecks light up across every node.", Illo: SceneSimulate },
@@ -380,7 +380,7 @@ export function Walkthrough({ open, onClose, onPickProblem }: WalkthroughProps) 
       <motion.div
         role="dialog"
         aria-modal="true"
-        aria-label="SystemForge walkthrough"
+        aria-label="System Design Lab walkthrough"
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, ease: EASE }}

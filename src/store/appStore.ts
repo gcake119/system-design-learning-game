@@ -44,7 +44,7 @@ let toastTimeoutId: ReturnType<typeof setTimeout> | null = null;
 export const useAppStore = create<AppState>()(
   persist(
     (set) => ({
-      selectedProblemId: "url-shortener",
+      selectedProblemId: "scenario-short-url",
       theme: "dark",
       leftSidebarOpen: true,
       rightPanelOpen: true,

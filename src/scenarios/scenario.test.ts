@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import bookingJson from "./core/booking-baseline.json";
 import { resolveRoundIncidents } from "./incidentEngine";
 import { parseScenario, scenarioToProblem, validateScenario } from "./schema";
-import { RELEASE_SCENARIOS, SCENARIOS } from "./registry";
+import { RELEASE_SCENARIOS, SCENARIO_PROBLEMS, SCENARIOS } from "./registry";
+import { buildReferenceGraph } from "@/lib/loadReference";
+import { getProblemById } from "@/data/problems";
 
 describe("scenario schema and incident engine", () => {
   it("loads a standalone JSON scenario and adapts it to an inherited problem", () => {
@@ -63,4 +65,25 @@ describe("scenario schema and incident engine", () => {
     expect(result.valid).toBe(false);
     expect(result.errors.join(" ")).toContain("official archive landing page");
   });
+
+  it.each(RELEASE_SCENARIOS.map((scenario) => scenario.id))(
+    "%s builds a non-empty reference canvas",
+    (scenarioId) => {
+      const problem = SCENARIO_PROBLEMS.find((item) => item.id === scenarioId);
+      expect(problem).toBeDefined();
+
+      const graph = buildReferenceGraph(problem!);
+      expect(graph.nodes).toHaveLength(problem!.referenceSolution.nodes.length);
+      expect(graph.edges).toHaveLength(problem!.referenceSolution.edges.length);
+      expect(graph.nodes.length).toBeGreaterThan(0);
+      expect(graph.edges.length).toBeGreaterThan(0);
+    },
+  );
+
+  it.each(RELEASE_SCENARIOS.map((scenario) => scenario.id))(
+    "%s is available through the shared problem resolver",
+    (scenarioId) => {
+      expect(getProblemById(scenarioId)?.id).toBe(scenarioId);
+    },
+  );
 });

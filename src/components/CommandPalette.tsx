@@ -10,6 +10,7 @@ import {
 import { SYSTEM_COMPONENTS } from "@/data/components";
 import type { SystemComponent } from "@/types/component";
 import { PROBLEMS } from "@/data/problems";
+import { SCENARIO_PROBLEMS } from "@/scenarios/registry";
 import { useCustomProblemsStore } from "@/store/customProblemsStore";
 import { useCustomComponentsStore } from "@/store/customComponentsStore";
 import { useCanvasStore, type ComponentNodeData } from "@/store/canvasStore";
@@ -18,7 +19,7 @@ import { ICON_MAP } from "@/lib/icons";
 
 interface CommandItem {
   id: string;
-  group: "Actions" | "Problems" | "Components";
+  group: "操作" | "題目" | "元件";
   label: string;
   hint?: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -110,7 +111,7 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
         },
       };
       addNode(node);
-      showToast(`Added ${component.label}`, "success");
+      showToast(`已加入 ${component.label}`, "success");
     },
     [screenToFlowPosition, addNode, showToast],
   );
@@ -123,35 +124,35 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
   const items = useMemo<CommandItem[]>(() => {
     const a = actions;
     const actionItems: CommandItem[] = [
-      { id: "act-guide", group: "Actions", label: "How System Design Lab works", icon: HelpCircle, run: a.onShowGuide },
-      { id: "act-sim", group: "Actions", label: "Run simulation", hint: "⌘↵", icon: Play, run: a.onSimulate },
-      { id: "act-score", group: "Actions", label: "Score design", hint: "⌘⇧S", icon: Trophy, run: a.onScore },
-      { id: "act-ref", group: "Actions", label: "Load reference solution", icon: Download, run: a.onLoadReference },
-      { id: "act-interview", group: "Actions", label: "Start practice interview", icon: GraduationCap, run: a.onStartInterview },
-      { id: "act-save", group: "Actions", label: "Save design", hint: "⌘S", icon: Save, run: a.onSave },
-      { id: "act-load", group: "Actions", label: "Load design", hint: "⌘O", icon: FolderOpen, run: a.onLoad },
-      { id: "act-undo", group: "Actions", label: "Undo", hint: "⌘Z", icon: Undo2, run: undo },
-      { id: "act-redo", group: "Actions", label: "Redo", hint: "⌘⇧Z", icon: Redo2, run: redo },
-      { id: "act-clear", group: "Actions", label: "Clear canvas", icon: Trash2, run: a.onClear },
-      { id: "act-support", group: "Actions", label: "Support the project", icon: Coffee, run: a.onOpenSupport },
+      { id: "act-guide", group: "操作", label: "查看操作說明", icon: HelpCircle, run: a.onShowGuide },
+      { id: "act-sim", group: "操作", label: "執行模擬", hint: "⌘↵", icon: Play, run: a.onSimulate },
+      { id: "act-score", group: "操作", label: "評分目前架構", hint: "⌘⇧S", icon: Trophy, run: a.onScore },
+      { id: "act-ref", group: "操作", label: "載入參考架構", icon: Download, run: a.onLoadReference },
+      { id: "act-interview", group: "操作", label: "開始面試練習", icon: GraduationCap, run: a.onStartInterview },
+      { id: "act-save", group: "操作", label: "儲存設計", hint: "⌘S", icon: Save, run: a.onSave },
+      { id: "act-load", group: "操作", label: "載入設計", hint: "⌘O", icon: FolderOpen, run: a.onLoad },
+      { id: "act-undo", group: "操作", label: "復原", hint: "⌘Z", icon: Undo2, run: undo },
+      { id: "act-redo", group: "操作", label: "重做", hint: "⌘⇧Z", icon: Redo2, run: redo },
+      { id: "act-clear", group: "操作", label: "清空畫布", icon: Trash2, run: a.onClear },
+      { id: "act-support", group: "操作", label: "支持這個專案", icon: Coffee, run: a.onOpenSupport },
     ];
-    const problemItems: CommandItem[] = [...PROBLEMS, ...customProblems].map((p) => ({
+    const problemItems: CommandItem[] = [...SCENARIO_PROBLEMS, ...PROBLEMS, ...customProblems].map((p) => ({
       id: `prob-${p.id}`,
-      group: "Problems",
+      group: "題目",
       label: p.title,
       hint: "difficulty" in p ? (p.difficulty as string) : undefined,
       icon: Box,
       run: () => {
         setSelectedProblem(p.id);
         setActiveLeftTab("problems");
-        showToast(`Selected: ${p.title}`, "info");
+        showToast(`已選擇：${p.title}`, "info");
       },
     }));
     const componentItems: CommandItem[] = allComponents.map((c) => ({
       id: `comp-${c.id}`,
-      group: "Components",
+      group: "元件",
       label: c.label,
-      hint: "Add to canvas",
+      hint: "加入畫布",
       icon: ICON_MAP[c.icon] ?? Puzzle,
       run: () => addComponent(c),
     }));
@@ -163,7 +164,7 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
   const filtered = useMemo(() => {
     if (q === "") {
       // No query: show everything in group order (Actions → Problems → Components).
-      const order = { Actions: 0, Problems: 1, Components: 2 };
+      const order = { 操作: 0, 題目: 1, 元件: 2 };
       return items.slice().sort((x, y) => order[x.group] - order[y.group]);
     }
     // With a query: rank purely by relevance so the best match leads, whatever its group.
@@ -232,7 +233,7 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
       <motion.div
         role="dialog"
         aria-modal="true"
-        aria-label="Command palette"
+        aria-label="快捷操作選單"
         initial={{ opacity: 0, scale: 0.97, y: -8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
@@ -245,19 +246,19 @@ export function CommandPalette({ open, onClose, actions }: CommandPaletteProps) 
             ref={inputRef}
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActive(0); }}
-            placeholder="Search problems, components, actions…"
+            placeholder="搜尋題目、元件或操作⋯"
             // Inline outline:none beats the global *:focus-visible ring — the modal
             // context already makes focus obvious, so the boxed ring looks wrong here.
             style={{ outline: "none", boxShadow: "none" }}
             className="h-12 w-full bg-transparent text-[15px] text-zinc-100 placeholder:text-zinc-500"
-            aria-label="Search commands"
+            aria-label="搜尋快捷操作"
           />
           <kbd className="hidden shrink-0 rounded border border-zinc-700/70 bg-zinc-800/80 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 sm:block">esc</kbd>
         </div>
 
         <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
           {filtered.length === 0 ? (
-            <div className="px-3 py-8 text-center text-sm text-zinc-500">No matches for “{query}”</div>
+            <div className="px-3 py-8 text-center text-sm text-zinc-500">找不到「{query}」</div>
           ) : (
             filtered.map((item, idx) => {
               const Icon = item.icon;

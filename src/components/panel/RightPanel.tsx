@@ -36,12 +36,12 @@ function RightTabs({ onSimulate }: { onSimulate: () => void }) {
     <Tabs value={activeRightTab} onValueChange={(v) => setActiveRightTab(v as typeof activeRightTab)} className="flex flex-1 flex-col min-h-0">
       <div className="mx-2 mt-2 shrink-0 overflow-x-auto">
         <TabsList className="h-8 w-max bg-zinc-800">
-          <TabsTrigger value="properties" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Props</TabsTrigger>
+          <TabsTrigger value="properties" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">設定</TabsTrigger>
           <TabsTrigger value="guide" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">解答</TabsTrigger>
-          <TabsTrigger value="simulation" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Simulate</TabsTrigger>
-          <TabsTrigger value="score" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Score</TabsTrigger>
-          <TabsTrigger value="capacity" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Capacity</TabsTrigger>
-          <TabsTrigger value="tradeoffs" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">Trade-offs</TabsTrigger>
+          <TabsTrigger value="simulation" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">模擬</TabsTrigger>
+          <TabsTrigger value="score" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">評分</TabsTrigger>
+          <TabsTrigger value="capacity" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">容量</TabsTrigger>
+          <TabsTrigger value="tradeoffs" className="h-7 px-2 text-[11px] data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100">取捨</TabsTrigger>
         </TabsList>
       </div>
 
@@ -147,13 +147,13 @@ function EdgePropertiesPanel() {
   return (
     <div className="space-y-3">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Edge Properties
+        連線設定
       </p>
 
       <div className="space-y-2">
         {/* Label */}
         <div>
-          <label className="mb-1 block text-xs text-zinc-400">Label</label>
+          <label className="mb-1 block text-xs text-zinc-400">名稱</label>
           <input
             type="text"
             value={data.label ?? ""}
@@ -165,7 +165,7 @@ function EdgePropertiesPanel() {
 
         {/* Protocol */}
         <div>
-          <label className="mb-1 block text-xs text-zinc-400">Protocol</label>
+          <label className="mb-1 block text-xs text-zinc-400">Protocol（通訊協定）</label>
           <select
             value={data.protocol ?? "http"}
             onChange={(e) => updateEdgeData(selectedEdge.id, { protocol: e.target.value as CustomEdgeData["protocol"] })}
@@ -173,7 +173,7 @@ function EdgePropertiesPanel() {
           >
             {protocols.map((p) => (
               <option key={p} value={p}>
-                {p === "http" ? "HTTP" : p === "grpc" ? "gRPC" : p === "websocket" ? "WebSocket" : p === "pubsub" ? "pub/sub" : p === "tcp" ? "TCP" : "Custom"}
+                {p === "http" ? "HTTP" : p === "grpc" ? "gRPC" : p === "websocket" ? "WebSocket" : p === "pubsub" ? "pub/sub" : p === "tcp" ? "TCP" : "自訂"}
               </option>
             ))}
           </select>
@@ -181,7 +181,7 @@ function EdgePropertiesPanel() {
 
         {/* Sync / Async toggle */}
         <div>
-          <label className="mb-1 block text-xs text-zinc-400">Communication</label>
+          <label className="mb-1 block text-xs text-zinc-400">傳遞方式</label>
           <div className="flex gap-1">
             <button
               onClick={() => updateEdgeData(selectedEdge.id, { async: false })}
@@ -191,7 +191,7 @@ function EdgePropertiesPanel() {
                   : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:bg-zinc-700"
               }`}
             >
-              Sync
+              同步
             </button>
             <button
               onClick={() => updateEdgeData(selectedEdge.id, { async: true })}
@@ -201,11 +201,11 @@ function EdgePropertiesPanel() {
                   : "bg-zinc-800 text-zinc-400 border border-zinc-700 hover:bg-zinc-700"
               }`}
             >
-              Async
+              非同步
             </button>
           </div>
           <p className="mt-1 text-[11px] text-zinc-500">
-            {data.async ? "Dashed line — asynchronous (e.g. message queue)" : "Solid line — synchronous (e.g. HTTP call)"}
+            {data.async ? "虛線代表非同步，例如 Message Queue（訊息佇列）" : "實線代表同步，例如 HTTP 呼叫"}
           </p>
         </div>
 
@@ -217,7 +217,7 @@ function EdgePropertiesPanel() {
           className="w-full gap-1.5 border-zinc-700 text-rose-400 hover:bg-zinc-800 hover:text-rose-300"
         >
           <Trash2 className="h-3 w-3" />
-          Remove Connection
+          移除連線
         </Button>
       </div>
     </div>
@@ -243,15 +243,15 @@ function PropertiesTab() {
       {problem && (
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-            Requirements — {problem.title}
+            系統需求 — {problem.title}
           </p>
           <div className="space-y-1.5">
             {[
-              { label: "Reads/sec", value: new Intl.NumberFormat("en-US").format(problem.requirements.readsPerSec) },
-              { label: "Writes/sec", value: new Intl.NumberFormat("en-US").format(problem.requirements.writesPerSec) },
-              { label: "Storage", value: `${new Intl.NumberFormat("en-US").format(problem.requirements.storageGB)} GB` },
-              { label: "Latency SLA", value: `< ${problem.requirements.latencyMs}ms` },
-              { label: "Users", value: problem.requirements.users },
+              { label: "每秒讀取", value: new Intl.NumberFormat("en-US").format(problem.requirements.readsPerSec) },
+              { label: "每秒寫入", value: new Intl.NumberFormat("en-US").format(problem.requirements.writesPerSec) },
+              { label: "儲存容量", value: `${new Intl.NumberFormat("en-US").format(problem.requirements.storageGB)} GB` },
+              { label: "延遲目標", value: `< ${problem.requirements.latencyMs}ms` },
+              { label: "使用者", value: problem.requirements.users },
             ].map((item) => (
               <div
                 key={item.label}
@@ -287,15 +287,15 @@ function PropertiesTab() {
       {selectedNode && selectedNode.type === "text" ? (
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-            Text Annotation
+            文字筆記
           </p>
           <div className="space-y-2">
             <div className="rounded-md bg-zinc-800 px-3 py-2">
               <p className="text-xs font-medium text-zinc-200">
-                Text Note
+                文字筆記
               </p>
               <p className="mt-0.5 text-xs text-zinc-500">
-                Double-click (or tap) on canvas to edit
+                在畫布上按兩下或輕點即可編輯
               </p>
             </div>
             <Button
@@ -309,7 +309,7 @@ function PropertiesTab() {
               className="w-full gap-1.5 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
             >
               <Pencil className="h-3 w-3" />
-              Edit text
+              編輯文字
             </Button>
             <Button
               variant="outline"
@@ -318,7 +318,7 @@ function PropertiesTab() {
               className="w-full gap-1.5 border-zinc-700 text-rose-400 hover:bg-zinc-800 hover:text-rose-300"
             >
               <Trash2 className="h-3 w-3" />
-              Remove Note
+              移除筆記
             </Button>
           </div>
         </div>
@@ -328,7 +328,7 @@ function PropertiesTab() {
           return (
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-            Component Properties
+            元件設定
           </p>
 
           <div className="space-y-2">
@@ -337,20 +337,20 @@ function PropertiesTab() {
                 {data.label as string}
               </p>
               <p className="mt-0.5 text-xs text-zinc-500">
-                {data.category as string} · Max {(data.maxQPS as number) === Infinity ? "\u221e" : new Intl.NumberFormat("en-US").format(data.maxQPS as number)} QPS
+                {data.category as string} · 上限 {(data.maxQPS as number) === Infinity ? "\u221e" : new Intl.NumberFormat("en-US").format(data.maxQPS as number)} QPS
               </p>
             </div>
 
             {/* Replicas slider \u2014 shown for every component node */}
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-xs text-zinc-400">Replicas</label>
+                <label className="text-xs text-zinc-400">副本數量</label>
                 <span className="font-mono text-xs text-cyan-500">
                   {data.replicas as number}
                 </span>
               </div>
               <Slider
-                aria-label="Replicas"
+                aria-label="副本數量"
                 value={[data.replicas as number]}
                 onValueChange={(v) =>
                   updateNodeData(selectedNode.id, { replicas: Array.isArray(v) ? v[0] : v })
@@ -361,15 +361,15 @@ function PropertiesTab() {
                 className=""
               />
               <p className="mt-1 text-[11px] text-zinc-400">
-                Effective capacity: {(data.maxQPS as number) === Infinity ? "\u221e" : new Intl.NumberFormat("en-US").format((data.maxQPS as number) * (data.replicas as number))} QPS
+                有效容量：{(data.maxQPS as number) === Infinity ? "\u221e" : new Intl.NumberFormat("en-US").format((data.maxQPS as number) * (data.replicas as number))} QPS
               </p>
             </div>
 
             {/* Info */}
             <div className="space-y-1">
               {[
-                { label: "Base Latency", value: `${data.latencyMs}ms` },
-                { label: "Scalable", value: data.scalable ? "Yes" : "No" },
+                { label: "基本延遲", value: `${data.latencyMs}ms` },
+                { label: "可擴充", value: data.scalable ? "是" : "否" },
               ].map((item) => (
                 <div
                   key={item.label}
@@ -388,7 +388,7 @@ function PropertiesTab() {
               className="w-full gap-1.5 border-zinc-700 text-rose-400 hover:bg-zinc-800 hover:text-rose-300"
             >
               <Trash2 className="h-3 w-3" />
-              Remove Component
+              移除元件
             </Button>
           </div>
 
@@ -406,10 +406,10 @@ function PropertiesTab() {
           </div>
           <div>
             <p className="text-xs font-medium text-zinc-400">
-              No component selected
+              尚未選取元件
             </p>
             <p className="mt-1 text-xs text-zinc-500">
-              Click a component or edge on the canvas to edit its properties.
+              在畫布選取元件或連線後，就能在這裡調整設定。
             </p>
           </div>
         </div>
@@ -425,7 +425,7 @@ function ConstraintsSection({ constraints }: { constraints: string[] }) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Constraints
+        限制條件
       </p>
       <div className="space-y-1.5">
         {shown.map((c, i) => (
@@ -443,12 +443,12 @@ function ConstraintsSection({ constraints }: { constraints: string[] }) {
           {expanded ? (
             <>
               <ChevronDown className="h-3 w-3" />
-              Show less
+              收合
             </>
           ) : (
             <>
               <ChevronRight className="h-3 w-3" />
-              Show {constraints.length - 3} more
+              再顯示 {constraints.length - 3} 項
             </>
           )}
         </button>
@@ -475,7 +475,7 @@ function HintsSection({ hints }: { hints: { title: string; content: string }[] }
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Hints
+        提示
       </p>
       <div className="space-y-1.5">
         {hints.map((hint, i) => (
@@ -525,7 +525,7 @@ function LearnSection({ componentId, label }: { componentId: string; label: stri
   const sections = [
     {
       key: "whenToUse",
-      label: "When to use",
+      label: "適合使用的時機",
       icon: Target,
       items: concept.whenToUse,
       accent: "text-emerald-400",
@@ -534,7 +534,7 @@ function LearnSection({ componentId, label }: { componentId: string; label: stri
     },
     {
       key: "tradeoffs",
-      label: "Trade-offs",
+      label: "取捨",
       icon: AlertTriangle,
       items: concept.keyTradeoffs,
       accent: "text-amber-400",
@@ -543,7 +543,7 @@ function LearnSection({ componentId, label }: { componentId: string; label: stri
     },
     {
       key: "interviewTips",
-      label: "Interview tips",
+      label: "面試提示",
       icon: MessageCircle,
       items: concept.interviewTips,
       accent: "text-cyan-400",
@@ -552,7 +552,7 @@ function LearnSection({ componentId, label }: { componentId: string; label: stri
     },
     {
       key: "patterns",
-      label: "Common patterns",
+      label: "常見做法",
       icon: Layers,
       items: concept.commonPatterns.map((p) => p.name),
       accent: "text-violet-400",
@@ -569,7 +569,7 @@ function LearnSection({ componentId, label }: { componentId: string; label: stri
       >
         <BookOpen className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
         <span className="flex-1 text-xs font-medium text-zinc-300">
-          Learn about {label}
+          認識 {label}
         </span>
         {expanded ? (
           <ChevronDown className="h-3 w-3 shrink-0 text-zinc-500" />

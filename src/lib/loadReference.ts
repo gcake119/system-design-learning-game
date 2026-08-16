@@ -85,7 +85,7 @@ export function loadReferenceIntoTab(problem: Problem): void {
 
   useCanvasStore.getState().addTab({
     id: `ref-${problem.id}`,
-    label: `${problem.title} (Reference)`,
+    label: `${problem.title}（參考架構）`,
     nodes,
     edges,
     readOnly: true,
@@ -93,5 +93,5 @@ export function loadReferenceIntoTab(problem: Problem): void {
 
   useAppStore
     .getState()
-    .showToast("Reference opened in new tab — your design is safe", "success");
+    .showToast("參考架構已在唯讀分頁開啟，原本的設計不受影響", "success");
 }

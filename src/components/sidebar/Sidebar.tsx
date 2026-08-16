@@ -33,19 +33,19 @@ function SidebarTabs({
           value="components"
           className="h-7 px-3 text-xs data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
         >
-          Components
+          元件
         </TabsTrigger>
         <TabsTrigger
           value="problems"
           className="h-7 px-3 text-xs data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
         >
-          Problems
+          題目
         </TabsTrigger>
         <TabsTrigger
           value="learn"
           className="h-7 px-3 text-xs data-[state=active]:bg-zinc-700 data-[state=active]:text-zinc-100"
         >
-          Learn
+          學習
         </TabsTrigger>
       </TabsList>
 

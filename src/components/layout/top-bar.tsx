@@ -37,7 +37,7 @@ import { type Node, useReactFlow } from "@xyflow/react";
 import { loadReferenceIntoTab } from "@/lib/loadReference";
 import { exportAsPng, exportAsSvg, exportAsJSON } from "@/lib/exportCanvas";
 import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog";
-import { getScenarioProblemById } from "@/scenarios/registry";
+import { getScenarioProblemById, RELEASE_SCENARIOS } from "@/scenarios/registry";
 
 interface TopBarProps {
   onSimulate: () => void;
@@ -105,9 +105,9 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
     const name = currentProblem?.title ?? "design";
     try {
       await exportAsPng(name);
-      useAppStore.getState().showToast("Exported as PNG", "success");
+      useAppStore.getState().showToast("已匯出 PNG", "success");
     } catch {
-      useAppStore.getState().showToast("Export failed", "error");
+      useAppStore.getState().showToast("匯出失敗", "error");
     }
   }, [currentProblem]);
 
@@ -116,9 +116,9 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
     const name = currentProblem?.title ?? "design";
     try {
       await exportAsSvg(name);
-      useAppStore.getState().showToast("Exported as SVG", "success");
+      useAppStore.getState().showToast("已匯出 SVG", "success");
     } catch {
-      useAppStore.getState().showToast("Export failed", "error");
+      useAppStore.getState().showToast("匯出失敗", "error");
     }
   }, [currentProblem]);
 
@@ -128,11 +128,11 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
     const { nodes, edges } = useCanvasStore.getState();
     const { strokes } = usePenStore.getState();
     if (nodes.length === 0 && strokes.length === 0) {
-      useAppStore.getState().showToast("Nothing to export", "info");
+      useAppStore.getState().showToast("畫布上沒有可以匯出的內容", "info");
       return;
     }
     exportAsJSON(nodes, edges, name, strokes);
-    useAppStore.getState().showToast("Exported as JSON", "success");
+    useAppStore.getState().showToast("已匯出 JSON", "success");
   }, [currentProblem]);
 
   // Keyboard shortcut: Ctrl/Cmd+E → Export as PNG
@@ -166,8 +166,8 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
         <button
           onClick={onToggleLeft}
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-          title="Toggle sidebar"
-          aria-label="Toggle sidebar"
+          title="開啟或收合側欄"
+          aria-label="開啟或收合側欄"
         >
           <PanelLeft className="h-4 w-4" />
         </button>
@@ -189,7 +189,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
             className="flex min-w-0 items-center gap-1.5 rounded-md border border-zinc-700 bg-zinc-800 px-2.5 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-zinc-100"
           >
             <span className="max-w-[120px] truncate md:max-w-none">
-              {currentProblem?.title ?? "Select Problem"}
+              {currentProblem?.title ?? "選擇題目"}
             </span>
             <ChevronDown className="h-3 w-3 shrink-0 text-zinc-500" />
           </button>
@@ -210,7 +210,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-1.5 border-b border-zinc-700 px-3 py-1.5 text-left text-xs font-medium text-violet-400 transition-colors hover:bg-zinc-700"
                 >
                   <Plus className="h-3 w-3" />
-                  Create Custom Problem
+                  建立自訂題目
                 </button>
 
                 {/* Custom problems */}
@@ -229,7 +229,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   >
                     <span className="flex-1 truncate">{problem.title}</span>
                     <span className="shrink-0 rounded bg-violet-500/10 px-1 py-0.5 text-[9px] font-medium text-violet-400">
-                      Custom
+                      自訂
                     </span>
                   </button>
                 ))}
@@ -237,6 +237,31 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                 {customProblems.length > 0 && (
                   <div className="my-0.5 h-px bg-zinc-700" />
                 )}
+
+                <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  學習關卡
+                </p>
+                {RELEASE_SCENARIOS.map((scenario) => (
+                  <button
+                    key={scenario.id}
+                    onClick={() => {
+                      setSelectedProblem(scenario.id);
+                      setDropdownOpen(false);
+                    }}
+                    className={`flex w-full items-center px-3 py-1.5 text-left text-xs transition-colors hover:bg-zinc-700 ${
+                      scenario.id === selectedProblemId
+                        ? "text-cyan-500"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                  >
+                    {scenario.title}
+                  </button>
+                ))}
+
+                <div className="my-0.5 h-px bg-zinc-700" />
+                <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                  練習題庫
+                </p>
 
                 {/* Predefined problems */}
                 {PROBLEMS.map((problem) => (
@@ -264,10 +289,10 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           <button
             onClick={loadReference}
             className="hidden shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-300 md:flex"
-            title="Load reference solution"
+            title="載入參考架構"
           >
             <Download className="h-3 w-3" />
-            Reference
+            參考架構
           </button>
         )}
 
@@ -276,10 +301,10 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
         <button
           onClick={addTextNote}
           className="hidden shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 md:flex"
-          title="Add text note to canvas"
+          title="在畫布加入文字筆記"
         >
           <StickyNote className="h-3 w-3" />
-          Add Note
+          加入筆記
         </button>
 
         <div className="mx-1 hidden h-4 w-px bg-zinc-800 md:block" />
@@ -288,8 +313,8 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           onClick={undo}
           disabled={!canUndo || activeTabReadOnly}
           className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-40 md:flex"
-          title="Undo (⌘Z)"
-          aria-label="Undo"
+          title="復原（⌘Z）"
+          aria-label="復原"
         >
           <Undo2 className="h-3.5 w-3.5" />
         </button>
@@ -297,8 +322,8 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           onClick={redo}
           disabled={!canRedo || activeTabReadOnly}
           className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-40 md:flex"
-          title="Redo (⌘⇧Z)"
-          aria-label="Redo"
+          title="重做（⌘⇧Z）"
+          aria-label="重做"
         >
           <Redo2 className="h-3.5 w-3.5" />
         </button>
@@ -308,10 +333,10 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
         <button
           onClick={onStartInterview}
           className="hidden shrink-0 items-center gap-1 rounded-md bg-zinc-800 px-2 py-1 text-[10px] font-medium text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-zinc-100 md:flex"
-          title="Start a guided interview practice"
+          title="開始引導式模擬面試"
         >
           <GraduationCap className="h-3.5 w-3.5" />
-          Practice Interview
+          模擬面試
         </button>
 
         {/* Mobile-only overflow menu */}
@@ -319,8 +344,8 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           <button
             onClick={() => setMobileMoreOpen((v) => !v)}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-            title="More actions"
-            aria-label="More actions"
+            title="更多操作"
+            aria-label="更多操作"
           >
             <MoreHorizontal className="h-4 w-4" />
           </button>
@@ -335,7 +360,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                     className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                   >
                     <Download className="h-3.5 w-3.5 text-zinc-500" />
-                    Load reference solution
+                    載入參考架構
                   </button>
                 )}
                 <button
@@ -343,14 +368,14 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <StickyNote className="h-3.5 w-3.5 text-zinc-500" />
-                  Add text note
+                  加入文字筆記
                 </button>
                 <button
                   onClick={() => { setMobileMoreOpen(false); onStartInterview(); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <GraduationCap className="h-3.5 w-3.5 text-zinc-500" />
-                  Practice interview
+                  模擬面試
                 </button>
 
                 <div className="my-1 h-px bg-zinc-800" />
@@ -361,14 +386,14 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <Save className="h-3.5 w-3.5 text-zinc-500" />
-                  Save design
+                  儲存設計
                 </button>
                 <button
                   onClick={() => { setMobileMoreOpen(false); onLoad(); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <FolderOpen className="h-3.5 w-3.5 text-zinc-500" />
-                  Load design
+                  載入設計
                 </button>
 
                 <div className="my-1 h-px bg-zinc-800" />
@@ -379,21 +404,21 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <ImageIcon className="h-3.5 w-3.5 text-zinc-500" />
-                  Export as PNG
+                  匯出為 PNG
                 </button>
                 <button
                   onClick={() => { setMobileMoreOpen(false); handleExportSvg(); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <FileCode2 className="h-3.5 w-3.5 text-zinc-500" />
-                  Export as SVG
+                  匯出為 SVG
                 </button>
                 <button
                   onClick={() => { setMobileMoreOpen(false); handleExportJson(); }}
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <FileJson className="h-3.5 w-3.5 text-zinc-500" />
-                  Export as JSON
+                  匯出為 JSON
                 </button>
 
                 <div className="my-1 h-px bg-zinc-800" />
@@ -404,7 +429,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                 >
                   <Heart className="h-3.5 w-3.5 fill-rose-400/40 text-rose-400" />
-                  Support this project
+                  支持這個專案
                 </button>
 
                 <div className="my-1 h-px bg-zinc-800" />
@@ -415,7 +440,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-rose-400 transition-colors hover:bg-zinc-800"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Clear canvas
+                  清空畫布
                 </button>
               </div>
             </>
@@ -428,18 +453,18 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
         <button
           onClick={onSave}
           className="hidden h-7 items-center gap-1 rounded-md px-2 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 md:flex"
-          title="Save design (Ctrl+S)"
+          title="儲存設計（Ctrl+S）"
         >
           <Save className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Save</span>
+          <span className="hidden sm:inline">儲存</span>
         </button>
         <button
           onClick={onLoad}
           className="hidden h-7 items-center gap-1 rounded-md px-2 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200 md:flex"
-          title="Load design (Ctrl+O)"
+          title="載入設計（Ctrl+O）"
         >
           <FolderOpen className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Load</span>
+          <span className="hidden sm:inline">載入</span>
         </button>
 
         <div className="hidden h-4 w-px bg-zinc-800 md:block" />
@@ -449,10 +474,10 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           <button
             onClick={() => setExportOpen(!exportOpen)}
             className="flex h-7 items-center gap-1 rounded-md px-2 text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-            title="Export design (Ctrl+E)"
+            title="匯出設計（Ctrl+E）"
           >
             <Download className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Export</span>
+            <span className="hidden sm:inline">匯出</span>
             <ChevronDown className="h-2.5 w-2.5 text-zinc-500" />
           </button>
 
@@ -468,7 +493,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
                 >
                   <ImageIcon className="h-3.5 w-3.5" />
-                  Export as PNG
+                  匯出為 PNG
                   <kbd className="ml-auto rounded border border-zinc-700 bg-zinc-800 px-1 py-0.5 font-mono text-[9px] text-zinc-500">
                     {"\u2318"}E
                   </kbd>
@@ -478,14 +503,14 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
                 >
                   <FileCode2 className="h-3.5 w-3.5" />
-                  Export as SVG
+                  匯出為 SVG
                 </button>
                 <button
                   onClick={handleExportJson}
                   className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
                 >
                   <FileJson className="h-3.5 w-3.5" />
-                  Export as JSON
+                  匯出為 JSON
                 </button>
               </div>
             </>
@@ -497,8 +522,8 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
         <button
           onClick={() => setClearConfirmOpen(true)}
           className="hidden h-7 w-7 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-rose-400 md:flex"
-          title="Clear canvas"
-          aria-label="Clear canvas"
+          title="清空畫布"
+          aria-label="清空畫布"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </button>
@@ -512,12 +537,12 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           {isSimulating ? (
             <>
               <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="hidden sm:inline">Simulating…</span>
+              <span className="hidden sm:inline">模擬中…</span>
             </>
           ) : (
             <>
               <Play className="h-3 w-3" />
-              <span className="hidden sm:inline">Simulate</span>
+              <span className="hidden sm:inline">模擬</span>
             </>
           )}
         </Button>
@@ -528,24 +553,24 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
           className="h-7 gap-1.5 border border-zinc-700 bg-transparent px-2.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 sm:px-3"
         >
           <Trophy className="h-3 w-3" />
-          <span className="hidden sm:inline">Score</span>
+          <span className="hidden sm:inline">評分</span>
         </Button>
 
         {/* Buy me a coffee — desktop only (mobile has FAB + overflow menu) */}
         <button
           onClick={onOpenSupport}
           className="hidden h-7 items-center gap-1.5 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 text-xs font-medium text-cyan-400 transition-colors hover:border-cyan-400/50 hover:bg-cyan-500/15 hover:text-cyan-300 md:flex"
-          title="Buy me a coffee — support the project"
+          title="請我喝杯咖啡，支持這個專案"
         >
           <Coffee className="h-3.5 w-3.5" />
-          <span>Buy me a coffee</span>
+          <span>請我喝杯咖啡</span>
         </button>
 
         <button
           onClick={toggleTheme}
           className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-          title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-          aria-label="Toggle color theme"
+          title={theme === "dark" ? "切換成淺色模式" : "切換成深色模式"}
+          aria-label="切換顏色模式"
         >
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
@@ -553,8 +578,8 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
         <button
           onClick={onToggleRight}
           className="flex h-7 w-7 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-          title="Toggle panel"
-          aria-label="Toggle properties panel"
+          title="開啟或收合右側面板"
+          aria-label="開啟或收合右側面板"
         >
           <PanelRight className="h-4 w-4" />
         </button>
@@ -563,9 +588,9 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
 
     <ConfirmDialog
       open={clearConfirmOpen}
-      title="Clear canvas?"
-      message="All components and connections on the current tab will be removed. This can't be undone."
-      confirmText="Clear canvas"
+      title="要清空畫布嗎？"
+      message="目前分頁的所有元件與連線都會移除，而且無法復原。"
+      confirmText="清空畫布"
       danger
       onConfirm={onClearCanvas}
       onClose={() => setClearConfirmOpen(false)}

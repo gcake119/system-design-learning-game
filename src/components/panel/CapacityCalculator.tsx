@@ -53,14 +53,14 @@ export function CapacityCalculator() {
       <div className="flex items-center gap-2">
         <Calculator className="h-3.5 w-3.5 text-cyan-500" />
         <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-          Capacity Estimation
+          容量估算
         </p>
       </div>
 
       {/* Inputs */}
       <div className="space-y-3">
         <InputField
-          label="Daily Active Users"
+          label="每日活躍使用者"
           value={dau}
           onChange={setDau}
           presets={[
@@ -71,7 +71,7 @@ export function CapacityCalculator() {
           ]}
         />
         <InputField
-          label="Avg Requests / User / Day"
+          label="每位使用者每日平均請求數"
           value={reqPerUser}
           onChange={setReqPerUser}
           presets={[
@@ -82,7 +82,7 @@ export function CapacityCalculator() {
           ]}
         />
         <InputField
-          label="Write Ratio"
+          label="寫入比例"
           value={writeRatio}
           onChange={setWriteRatio}
           presets={[
@@ -93,7 +93,7 @@ export function CapacityCalculator() {
           ]}
         />
         <InputField
-          label="Avg Data per Request (KB)"
+          label="每次請求的平均資料量（KB）"
           value={dataSizeKB}
           onChange={setDataSizeKB}
           presets={[
@@ -109,26 +109,26 @@ export function CapacityCalculator() {
 
       {/* Results */}
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-        Estimates
+        估算結果
       </p>
 
       <div className="space-y-2">
         <ResultRow
-          label="Total Requests / Day"
+          label="每日總請求數"
           value={formatNumber(estimates.totalRequests)}
         />
         <ResultRow
-          label="Avg QPS"
+          label="平均 QPS"
           value={formatNumber(estimates.qps)}
           highlight
         />
         <ResultRow
-          label="Peak QPS (3× avg)"
+          label="尖峰 QPS（平均值的 3 倍）"
           value={formatNumber(estimates.peakQps)}
           highlight
         />
         <ResultRow
-          label="Write QPS"
+          label="寫入 QPS"
           value={formatNumber(estimates.writeQPS)}
         />
       </div>
@@ -137,16 +137,16 @@ export function CapacityCalculator() {
 
       <div className="space-y-2">
         <ResultRow
-          label="Storage / Day"
+          label="每日儲存量"
           value={formatBytes(estimates.storagePerDay)}
         />
         <ResultRow
-          label="Storage / Year"
+          label="每年儲存量"
           value={formatBytes(estimates.storagePerYear)}
           highlight
         />
         <ResultRow
-          label="Peak Bandwidth"
+          label="尖峰頻寬"
           value={formatBandwidth(estimates.bandwidthBps)}
           highlight
         />
@@ -154,7 +154,7 @@ export function CapacityCalculator() {
 
       {/* Formula reference */}
       <div className="rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-2">
-        <p className="text-[11px] font-medium text-zinc-400">Formulas</p>
+        <p className="text-[11px] font-medium text-zinc-400">計算公式</p>
         <div className="mt-1 space-y-0.5 font-mono text-[11px] text-zinc-400">
           <p>QPS = DAU × req/user ÷ 86,400</p>
           <p>Peak = QPS × 3</p>

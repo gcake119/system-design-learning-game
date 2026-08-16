@@ -41,11 +41,11 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
   const handleDeleteCustom = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     deleteProblem(id);
-    // If the deleted problem was selected, switch to the first predefined problem
+    // If the deleted problem was selected, switch to the first learning scenario.
     if (selectedProblemId === id) {
-      setSelectedProblem(PROBLEMS[0].id);
+      setSelectedProblem(RELEASE_SCENARIOS[0].id);
     }
-    useAppStore.getState().showToast("Custom problem deleted", "info");
+    useAppStore.getState().showToast("自訂題目已刪除", "info");
   };
 
   return (
@@ -88,7 +88,7 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
           className="flex w-full items-center gap-2 rounded-md border border-dashed border-zinc-600 px-2.5 py-2 text-left text-xs font-medium text-violet-400 transition-colors hover:border-violet-500/50 hover:bg-violet-500/5"
         >
           <Plus className="h-3.5 w-3.5" />
-          Create Custom Problem
+          建立自訂題目
         </button>
 
         {/* Custom problems — row is a div[role=button] so the delete X can be
@@ -127,7 +127,7 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
                   variant="outline"
                   className="h-4 shrink-0 border-violet-500/30 bg-violet-500/10 px-1.5 text-[11px] font-medium text-violet-400"
                 >
-                  Custom
+                  自訂
                 </Badge>
                 <Badge
                   variant="outline"
@@ -135,13 +135,13 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
                     problem.difficulty
                   )}`}
                 >
-                  {problem.difficulty}
+                  {getDifficultyLabel(problem.difficulty)}
                 </Badge>
                 <button
                   onClick={(e) => handleDeleteCustom(e, problem.id)}
                   className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-zinc-500 opacity-60 transition-opacity hover:text-rose-400 group-focus-within:opacity-100 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100"
-                  title="Delete custom problem"
-                  aria-label={`Delete custom problem ${problem.title}`}
+                  title="刪除自訂題目"
+                  aria-label={`刪除自訂題目 ${problem.title}`}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -194,7 +194,7 @@ export function ProblemSelector({ onCreateProblem }: ProblemSelectorProps) {
                   problem.difficulty
                 )}`}
               >
-                {problem.difficulty}
+                {getDifficultyLabel(problem.difficulty)}
               </Badge>
             </div>
             <div className="flex flex-wrap gap-1">

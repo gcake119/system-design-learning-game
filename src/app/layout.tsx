@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "System Design Lab — Interactive Learning Game",
-  description: "Build architectures, predict behavior, run deterministic incidents, inspect evidence, and improve your system design.",
+  title: "System Design Lab — 互動式系統設計學習遊戲",
+  description: "動手建立架構、模擬流量與故障，透過解答和參考資料練習系統設計。",
 };
 
 export const viewport: Viewport = {
@@ -36,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="zh-Hant"
       // The inline theme script below toggles the `dark` class before React
       // hydrates, so the html class intentionally differs from SSR — suppress
       // the expected hydration warning (canonical theme-toggle pattern).

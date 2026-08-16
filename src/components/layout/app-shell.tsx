@@ -287,6 +287,7 @@ export function AppShell() {
           onSave={handleSave}
           onLoad={handleLoad}
           onStartInterview={() => setInterviewDialogOpen(true)}
+          onLoadReference={handleLoadReference}
           onCreateProblem={() => setCreateProblemDialogOpen(true)}
           onOpenSupport={() => setSupportDialogOpen(true)}
           onToggleLeft={handleToggleLeft}

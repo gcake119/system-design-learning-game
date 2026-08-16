@@ -31,10 +31,9 @@ import { useAppStore } from "@/store/appStore";
 import { useCanvasStore } from "@/store/canvasStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { usePenStore } from "@/store/penStore";
-import { getProblemById, PROBLEMS } from "@/data/problems";
+import { PROBLEMS } from "@/data/problems";
 import { useCustomProblemsStore } from "@/store/customProblemsStore";
 import { type Node, useReactFlow } from "@xyflow/react";
-import { loadReferenceIntoTab } from "@/lib/loadReference";
 import { exportAsPng, exportAsSvg, exportAsJSON } from "@/lib/exportCanvas";
 import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog";
 import { getScenarioProblemById, RELEASE_SCENARIOS } from "@/scenarios/registry";
@@ -46,13 +45,14 @@ interface TopBarProps {
   onSave: () => void;
   onLoad: () => void;
   onStartInterview: () => void;
+  onLoadReference: () => void;
   onCreateProblem: () => void;
   onOpenSupport: () => void;
   onToggleLeft: () => void;
   onToggleRight: () => void;
 }
 
-export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onStartInterview, onCreateProblem, onOpenSupport, onToggleLeft, onToggleRight }: TopBarProps) {
+export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onStartInterview, onLoadReference, onCreateProblem, onOpenSupport, onToggleLeft, onToggleRight }: TopBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
@@ -148,15 +148,6 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleExportPng]);
-
-  const loadReference = useCallback(() => {
-    // Read the selected problem at click time so an immediate click after
-    // switching scenarios never opens the previously selected reference.
-    const problem = getProblemById(useAppStore.getState().selectedProblemId);
-    if (!problem) return;
-    // Opens the reference in a NEW read-only tab — user's design stays safe
-    loadReferenceIntoTab(problem);
-  }, []);
 
   return (
     <>
@@ -287,7 +278,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
 
         {!selectedProblemId.startsWith("custom-") && (
           <button
-            onClick={loadReference}
+            onClick={onLoadReference}
             className="hidden shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-300 md:flex"
             title="載入參考架構"
           >
@@ -356,7 +347,7 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
                 {/* Design actions */}
                 {!selectedProblemId.startsWith("custom-") && (
                   <button
-                    onClick={() => { setMobileMoreOpen(false); loadReference(); }}
+                    onClick={() => { setMobileMoreOpen(false); onLoadReference(); }}
                     className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
                   >
                     <Download className="h-3.5 w-3.5 text-zinc-500" />

@@ -31,7 +31,7 @@ import { useAppStore } from "@/store/appStore";
 import { useCanvasStore } from "@/store/canvasStore";
 import { useSimulationStore } from "@/store/simulationStore";
 import { usePenStore } from "@/store/penStore";
-import { PROBLEMS } from "@/data/problems";
+import { getProblemById, PROBLEMS } from "@/data/problems";
 import { useCustomProblemsStore } from "@/store/customProblemsStore";
 import { type Node, useReactFlow } from "@xyflow/react";
 import { loadReferenceIntoTab } from "@/lib/loadReference";
@@ -150,13 +150,13 @@ export function TopBar({ onSimulate, onScore, onClearCanvas, onSave, onLoad, onS
   }, [handleExportPng]);
 
   const loadReference = useCallback(() => {
-    const problem =
-      getScenarioProblemById(selectedProblemId) ??
-      PROBLEMS.find((p) => p.id === selectedProblemId);
+    // Read the selected problem at click time so an immediate click after
+    // switching scenarios never opens the previously selected reference.
+    const problem = getProblemById(useAppStore.getState().selectedProblemId);
     if (!problem) return;
     // Opens the reference in a NEW read-only tab — user's design stays safe
     loadReferenceIntoTab(problem);
-  }, [selectedProblemId]);
+  }, []);
 
   return (
     <>
